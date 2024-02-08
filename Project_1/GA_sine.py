@@ -36,26 +36,24 @@ class GA_sine:
         max_fitness = []
         sum_fitness = []
 
+        # create new generations until the maximum number of generations is reached
+        # either by using generation replacement or deterministic crowding
         for i in range(generation_num):
             print(f"Generation: {i}")
             population_new, fitness_new = self.generate_generation(
                 population, crossover_rate, mutation_rate, limitation, crowding
             )
             print(f"Population shape: {population_new.shape}")
-            print(f"Fitness: {fitness_new}")
             population = population_new
 
+            # variables to store plotting data
             generations.append(population_new)
             fitness_per_generation.append(fitness_new)
             average_fitness.append(np.sum(fitness_new) / len(fitness_new))
             max_fitness.append(np.max(fitness_new))
             sum_fitness.append(np.sum(fitness_new))
 
-        print(
-            "GA finished with :",
-            np.sum(np.array(fitness_per_generation[-1]))
-            / len(np.array(fitness_per_generation[-1])),
-        )
+        print("GA finished with best value of:", max_fitness[-1])
         return (
             generations,
             fitness_per_generation,
@@ -64,6 +62,7 @@ class GA_sine:
             sum_fitness,
         )
 
+    # create new generations by using generation replacement or deterministic crowding
     def generate_generation(
         self, population, crossover_rate, mutation_rate, limitation, crowding
     ):
@@ -79,6 +78,12 @@ class GA_sine:
 
         return pop_new, fitness_new
 
+    # create new generations by using generation replacement
+    #
+    # select parents out of the old generation using roulette wheel selection
+    # create offspring by using crossover and mutation
+    # add offspring to the new generation
+    # do until the new generation has the same size as the old generation
     def generation_replacement(
         self, population, crossover_rate, mutation_rate, limitation
     ):
@@ -101,6 +106,14 @@ class GA_sine:
 
         return pop_new, fitness_new
 
+    # create new generations by using deterministic crowding
+    #
+    # creates a copy of the old generation
+    # select parents out of the copy using roulette wheel selection
+    # create offspring by using crossover and mutation
+    # replace parents with offspring if the offspring has a better fitness
+    # -> in case the same parent got selected twice, only one offspring will be added (if it is better)
+    # do until the new generation has the same size as the old generation
     def deterministic_crowding(
         self, population, crossover_rate, mutation_rate, limitation
     ):
@@ -113,7 +126,6 @@ class GA_sine:
             parents = self.roulette_wheel_selection(pop_new, 2, limitation)
 
             offspring = self.generate_offspring(parents[0], parents[1], crossover_rate)
-            print(offspring)
 
             for k in range(len(offspring)):
                 offspring[k] = self.mutate_gene(offspring[k], mutation_rate)
@@ -162,11 +174,13 @@ class GA_sine:
 
         return pop_new, fitness_new
 
+    # create the initial population with given size and number of features
     def generate_initial_population(self, population_size, num_features):
         return self.myRNG.integers(
             0, 1, size=(population_size, num_features), endpoint=True
         )
 
+    # gets a whole generation and returns an array with the fitness of each individual (in the same order as the generation)
     def create_fitness_scores(self, population, limitation):
         fitness_scores = []
         for i in range(population.shape[0]):
@@ -176,6 +190,7 @@ class GA_sine:
             fitness_scores.append(fitness)
         return np.array(fitness_scores)
 
+    # gets a bitstring and returns the fitness of the bitstring
     def get_fitness_of_bitstring(self, bit_string, limitation):
         int_value = int("".join(map(str, bit_string)), 2)
         scaled_value = int_value * (128 / 2 ** len(bit_string))
@@ -191,6 +206,8 @@ class GA_sine:
 
         return fitness
 
+    # selects a given number of parents out of the population using roulette wheel selection
+    # returns an array with the selected parents
     def roulette_wheel_selection(self, population, num_parents, limitation):
         fitness_scores = self.create_fitness_scores(population, limitation)
         sum_fitness = np.sum(fitness_scores)
@@ -205,11 +222,7 @@ class GA_sine:
 
         return np.array(parents)
 
-    def select_best(self, population, num_parents):
-        fitness_scores = self.create_fitness_scores(population)
-        best = np.argsort(fitness_scores)[-num_parents:]
-        return population[best]
-
+    # gets two parents and a crossover rate and returns an array with the offspring
     def generate_offspring(self, parent1, parent2, crossover_rate):
         if self.myRNG.random() < crossover_rate:
             crossover_point = self.myRNG.integers(1, len(parent1))
@@ -223,6 +236,7 @@ class GA_sine:
         else:
             return np.array([parent1, parent2])
 
+    # gets a bitstring and a mutation rate and returns the mutated bitstring
     def mutate_gene(self, bit_string, mutation_rate):
         for i in range(len(bit_string)):
             if self.myRNG.random() < mutation_rate:

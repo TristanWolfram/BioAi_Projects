@@ -36,13 +36,14 @@ class GA_feature_selection:
         min_fitness = []
         sum_fitness = []
 
+        # create new generations until the maximum number of generations is reached
+        # either by using generation replacement or deterministic crowding
         for i in range(generation_num):
             print(f"Generation: {i}")
             population_new, fitness_new = self.generate_generation(
                 data, population, crossover_rate, mutation_rate, crowding
             )
             print(f"Population shape: {population_new.shape}")
-            print(f"Fitness: {fitness_new}")
             population = population_new
 
             generations.append(population_new)
@@ -64,6 +65,7 @@ class GA_feature_selection:
             sum_fitness,
         )
 
+    # create new generations by using generation replacement or deterministic crowding
     def generate_generation(
         self, data, population, crossover_rate, mutation_rate, crowding
     ):
@@ -79,6 +81,12 @@ class GA_feature_selection:
 
         return pop_new, fitness_new
 
+    # create new generations by using generation replacement
+    #
+    # select parents out of the old generation using roulette wheel selection
+    # create offspring by using crossover and mutation
+    # add offspring to the new generation
+    # do until the new generation has the same size as the old generation
     def generation_replacement(self, data, population, crossover_rate, mutation_rate):
         pop_new = []
         j = 1
@@ -99,6 +107,14 @@ class GA_feature_selection:
 
         return pop_new, fitness_new
 
+    # create new generations by using deterministic crowding
+    #
+    # creates a copy of the old generation
+    # select parents out of the copy using roulette wheel selection
+    # create offspring by using crossover and mutation
+    # replace parents with offspring if the offspring has a better fitness
+    # -> in case the same parent got selected twice, only one offspring will be added (if it is better)
+    # do until the new generation has the same size as the old generation
     def deterministic_crowding(self, data, population, crossover_rate, mutation_rate):
 
         pop_new = population.copy()
@@ -157,6 +173,9 @@ class GA_feature_selection:
 
         return pop_new, fitness_new
 
+    # create the initial population with given size and number of features
+    # a 1 is added to the end of each bit string to represent the bias
+    # -> bug in LinReg.get_columns() method
     def generate_initial_population(self, population_size, num_features):
         individuals = self.myRNG.integers(
             0, 1, size=(population_size, num_features), endpoint=True
@@ -165,6 +184,7 @@ class GA_feature_selection:
         individuals = np.hstack((individuals, ones_column))
         return individuals
 
+    # gets a whole generation and returns an array with the fitness of each individual (in the same order as the generation)
     def create_fitness_scores(self, data, population):
         fitness_scores = []
         for i in range(population.shape[0]):
@@ -172,12 +192,15 @@ class GA_feature_selection:
             fitness_scores.append(fitness)
         return np.array(fitness_scores)
 
+    # gets a bitstring and returns the fitness of the bitstring
     def get_fitness_of_bitstring(self, data, bit_string):
         X = self.regressor.get_columns(data.values, bit_string)
         fitness = self.regressor.get_fitness(X[:, :-1], X[:, -1], 20)
 
         return fitness
 
+    # selects a given number of parents out of the population using roulette wheel selection
+    # returns an array with the selected parents
     def roulette_wheel_selection(self, data, population, num_parents):
         fitness_scores = self.create_fitness_scores(data, population)
 
@@ -195,11 +218,7 @@ class GA_feature_selection:
 
         return np.array(parents)
 
-    def select_best(self, population, num_parents):
-        fitness_scores = self.create_fitness_scores(population)
-        best = np.argsort(fitness_scores)[-num_parents:]
-        return population[best]
-
+    # gets two parents and a crossover rate and returns an array with the offspring
     def generate_offspring(self, parent1, parent2, crossover_rate):
         if self.myRNG.random() < crossover_rate:
             crossover_point = self.myRNG.integers(1, len(parent1))
@@ -213,6 +232,7 @@ class GA_feature_selection:
         else:
             return np.array([parent1, parent2])
 
+    # gets a bitstring and a mutation rate and returns the mutated bitstring
     def mutate_gene(self, bit_string, mutation_rate):
         for i in range(len(bit_string)):
             if self.myRNG.random() < mutation_rate:
