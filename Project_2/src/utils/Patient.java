@@ -1,3 +1,4 @@
+package utils;
 public class Patient {
     int demand;
     TimeWindow timeWindow;
