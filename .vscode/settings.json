@@ -1,0 +1,7 @@
+{
+    "java.project.referencedLibraries": [
+        "lib/**/*.jar",
+        "/home/tristan/apps/java_libaries/org.json.jar",
+        "/home/tristan/apps/java_libaries/json-simple-1.1.jar"
+    ]
+}
