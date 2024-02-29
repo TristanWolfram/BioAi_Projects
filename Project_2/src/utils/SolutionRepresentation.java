@@ -1,19 +1,22 @@
 package utils;
-public class SolutionRepresentation {
-    Route[] solution;
 
-    public SolutionRepresentation(Route[] solution) {
+import java.util.ArrayList;
+
+public class SolutionRepresentation {
+    ArrayList<Nurse> solution;
+
+    public SolutionRepresentation(ArrayList<Nurse> solution) {
         this.solution = solution;
     }
 
-    public Route[] getSolution() {
+    public ArrayList<Nurse> getSolution() {
         return solution;
     }
 
-    public float getFitness() {
-        float fitness = 0;
-        for (Route route : solution) {
-            fitness += route.getTravelTime();
+    public int getFitness(double[][] travelMatrix) {
+        int fitness = 0;
+        for (Nurse route : solution) {
+            fitness += route.getFitnessOfRoute(travelMatrix);
         }
         return fitness;
     }
