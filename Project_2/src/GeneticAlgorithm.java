@@ -1,3 +1,4 @@
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -53,6 +54,100 @@ public class GeneticAlgorithm {
 
         System.out.println("Genetic Algorithm initialized!");
         System.out.println("Initial fitness -> best:" + getBestFitness() + " | average:" + getAverageFitness());
+
+        ArrayList<SolutionRepresentation> children = crossover(population.get(0), population.get(1), 2);
+    }
+
+    public void run() {
+        for (int i = 0; i < generations; i++) {
+            ArrayList<SolutionRepresentation> newPopulation = new ArrayList<SolutionRepresentation>();
+
+            ArrayList<SolutionRepresentation> parents = getParentsRouletteWheelSelect();
+
+            ArrayList<SolutionRepresentation> children = crossover(parents.get(0), parents.get(1), 2);
+
+            for (SolutionRepresentation child : children) {
+                if (Math.random() < mutationRate) {
+                    // mutate
+                }
+            }
+
+            newPopulation.addAll(children);
+
+            newPopulation = sortSolution(newPopulation);
+            newPopulation = new ArrayList<>(newPopulation.subList(0, populationSize));
+            Collections.shuffle(newPopulation);
+
+            population = newPopulation;
+
+            System.out.println(
+                    "Generation " + i + " -> best:" + getBestFitness() + " | average:" + getAverageFitness());
+        }
+    }
+
+    private ArrayList<SolutionRepresentation> getParentsRouletteWheelSelect() {
+        ArrayList<SolutionRepresentation> parents = new ArrayList<SolutionRepresentation>();
+
+        parents.add(selectIndividualByRouletteWheel());
+        parents.add(selectIndividualByRouletteWheel());
+
+        // make sure parents are different
+        while (parents.get(0).equals(parents.get(1))) {
+            parents.set(1, selectIndividualByRouletteWheel());
+        }
+
+        return parents;
+    }
+
+    private SolutionRepresentation selectIndividualByRouletteWheel() {
+        int sumFitness = getSumFitness();
+        int random = (int) (Math.random() * sumFitness);
+        int runningSum = 0;
+
+        for (SolutionRepresentation solution : population) {
+            runningSum += solution.getFitness(travelTimes);
+            if (runningSum > random) {
+                return solution;
+            }
+        }
+
+        System.out.println("Error selecting individual by roulette wheel");
+        return population.get(population.size() - 1);
+    }
+
+    private ArrayList<SolutionRepresentation> crossover(SolutionRepresentation parent1, SolutionRepresentation parent2,
+            int number) {
+        ArrayList<SolutionRepresentation> children = new ArrayList<SolutionRepresentation>();
+
+        // select random route from both parents
+        int randomRoute1 = (int) (Math.random() * parent1.getSolution().size());
+        int randomRoute2 = (int) (Math.random() * parent2.getSolution().size());
+
+        // find patients of route 1 in solution 2
+        SolutionRepresentation child1 = parent2;
+        System.out.println("child1: " + child1);
+        ArrayList<Patient> Route1 = parent1.getSolution().get(randomRoute1).getRoute().patients;
+        System.out.println("Route1: " + Route1);
+
+        for (Patient patient : Route1) {
+            for (Nurse nurse : child1.getSolution()) {
+                if (nurse.getRoute().patients.contains(patient)) {
+                    // remove patient from route 2 and add it to free patients
+                    nurse.getRoute().patients.remove(patient);
+                }
+            }
+        }
+
+        System.out.println("child1: " + child1);
+
+        return children;
+    }
+
+    private ArrayList<SolutionRepresentation> sortSolution(ArrayList<SolutionRepresentation> currentPopulation) {
+        currentPopulation.sort((solution1, solution2) -> Integer.compare(solution1.getFitness(travelTimes),
+                solution2.getFitness(travelTimes)));
+
+        return currentPopulation;
     }
 
     public int getBestFitness() {
@@ -74,4 +169,11 @@ public class GeneticAlgorithm {
         return totalFitness / populationSize;
     }
 
+    public int getSumFitness() {
+        int totalFitness = 0;
+        for (SolutionRepresentation solution : population) {
+            totalFitness += solution.getFitness(travelTimes);
+        }
+        return totalFitness;
+    }
 }

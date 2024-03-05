@@ -55,4 +55,8 @@ public class Route {
 
         return travelTime * timeWindowViolation;
     }
+
+    public String toString() {
+        return "Route: " + patients;
+    }
 }

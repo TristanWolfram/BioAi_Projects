@@ -20,4 +20,20 @@ public class SolutionRepresentation {
         }
         return fitness;
     }
+
+    public String toString() {
+        String str = "Solution:\n";
+
+        for (Nurse nurse : solution) {
+            str += nurse.toString() + "\n";
+        }
+
+        return str;
+    }
+
+    public String toStringSimple(double[][] travelMatrix) {
+        String str = "Solution:\n";
+        str += "Fitness: " + getFitness(travelMatrix) + "\n";
+        return str;
+    }
 }

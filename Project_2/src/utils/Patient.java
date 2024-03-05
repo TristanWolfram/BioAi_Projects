@@ -20,7 +20,7 @@ public class Patient {
     }
 
     public String toString() {
-        return "Patient: " + demand + ", " + timeWindow + ", " + careTime;
+        return "Patient: " + key;
     }
 
     public int getDemand() {

@@ -19,7 +19,15 @@ public class Nurse {
         return fitnessOfRoute;
     }
 
+    public Route getRoute() {
+        return route;
+    }
+
     public void setRoute(Route route) {
         this.route = route;
+    }
+
+    public String toString() {
+        return "Nurse: -> " + route;
     }
 }
