@@ -9,14 +9,18 @@ public class Nurse {
         this.capacity = capacity;
     }
 
-    public int getFitnessOfRoute(double[][] travelMatrix) {
-        int fitnessOfRoute = route.getTravelTime(travelMatrix);
+    public double getFitnessOfRoute(double[][] travelMatrix, int returnTime) {
+        double fitnessOfRoute = route.getTravelTime(travelMatrix, returnTime);
 
         if (route.getTotalDemand() > capacity) {
-            fitnessOfRoute += 1000;
+            fitnessOfRoute += 2000.0;
         }
 
         return fitnessOfRoute;
+    }
+
+    public int getPatientCount() {
+        return route.getPatientCount();
     }
 
     public Route getRoute() {
@@ -25,6 +29,10 @@ public class Nurse {
 
     public void setRoute(Route route) {
         this.route = route;
+    }
+
+    public int getCapacity() {
+        return capacity;
     }
 
     public String toString() {

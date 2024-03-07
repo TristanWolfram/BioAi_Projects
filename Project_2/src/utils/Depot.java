@@ -1,4 +1,5 @@
 package utils;
+
 public class Depot {
     int return_time;
 
@@ -9,6 +10,10 @@ public class Depot {
         this.return_time = return_time;
         this.x_coord = x_coord;
         this.y_coord = y_coord;
+    }
+
+    public int getReturnTime() {
+        return return_time;
     }
 
     public String toString() {

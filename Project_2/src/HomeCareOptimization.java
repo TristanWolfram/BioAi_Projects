@@ -80,15 +80,26 @@ public class HomeCareOptimization {
             throw new RuntimeException();
         }
 
-        int generations = 100;
-        int populationSize = 10;
-        double mutationRate = 0.01;
-        double crossoverRate = 0.9;
+        int generations = 3000;
+        int populationSize = 200;
+        double mutationRate = 0.02;
+        double crossoverRate = 1;
+
+        int returnTime = depot.getReturnTime();
 
         GeneticAlgorithm ga = new GeneticAlgorithm(generations, populationSize, mutationRate, crossoverRate, nbr_nurses,
                 capacity_nurse,
-                patients, travelTimes);
+                patients, travelTimes, returnTime);
 
-        System.out.println("Generations: " + ga.generations);
+        System.out.println("Starting algorithm ... \nGenerations: ->" + ga.generations + "\nPopulation Size: ->"
+                + ga.populationSize + "\nMutation Rate: ->" + ga.mutationRate + "\nCrossover Rate: ->"
+                + ga.crossoverRate);
+
+        SolutionRepresentation best = ga.run();
+
+        System.out.println(best);
+
+        System.out.println("Fitness: -> " + best.getFitness(travelTimes, returnTime));
+        System.out.println("Solution is feasible: -> " + best.isFeasible(travelTimes, returnTime));
     }
 }

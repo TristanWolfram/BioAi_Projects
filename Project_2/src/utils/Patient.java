@@ -1,13 +1,16 @@
 package utils;
 
+import java.util.ArrayList;
+
 public class Patient {
     public int key;
     private int demand;
     private TimeWindow timeWindow;
     private int careTime;
 
-    private int x_coord;
-    private int y_coord;
+    private Coordinate coordinate;
+
+    private ArrayList<PatientDistancePair> nearestThreePatients;
 
     public Patient(int key, int x_coord, int y_coord, int demand, int start_time, int end_time, int care_time) {
         this.key = key;
@@ -15,8 +18,14 @@ public class Patient {
         this.timeWindow = new TimeWindow(start_time, end_time);
         this.careTime = care_time;
 
-        this.x_coord = x_coord;
-        this.y_coord = y_coord;
+        this.coordinate = new Coordinate(x_coord, y_coord);
+
+        this.nearestThreePatients = null;
+    }
+
+    public double distanceTo(Patient other) {
+        return Math.sqrt(Math.pow(this.coordinate.getX() - other.coordinate.getX(), 2)
+                + Math.pow(this.coordinate.getY() - other.coordinate.getY(), 2));
     }
 
     public String toString() {
@@ -35,11 +44,19 @@ public class Patient {
         return careTime;
     }
 
-    public int getXCoord() {
-        return x_coord;
+    public Coordinate getCoordinate() {
+        return coordinate;
     }
 
-    public int getYCoord() {
-        return y_coord;
+    public void setNearestThreePatients(ArrayList<PatientDistancePair> nearestThreePatients) {
+        this.nearestThreePatients = nearestThreePatients;
+    }
+
+    public ArrayList<PatientDistancePair> getNearestThreePatients() {
+        return nearestThreePatients;
+    }
+
+    public PatientDistancePair getNearestPatient() {
+        return nearestThreePatients.get(0);
     }
 }

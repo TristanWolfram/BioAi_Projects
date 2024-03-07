@@ -3,7 +3,7 @@ package utils;
 import java.util.ArrayList;
 
 public class Route {
-    public ArrayList<Patient> patients;
+    private ArrayList<Patient> patients;
 
     public Route(ArrayList<Patient> patients) {
         this.patients = patients;
@@ -17,43 +17,107 @@ public class Route {
         return demand;
     }
 
-    public int getTravelTime(double[][] travelMatrix) {
+    public int getPatientCount() {
+        return patients.size();
+    }
+
+    public ArrayList<Patient> getPatients() {
+        return patients;
+    }
+
+    public double getTravelTime(double[][] travelMatrix, int returnTime) {
 
         if (patients.size() == 0) {
             return 0;
         }
 
         int timeWindowViolation = 1;
-        int travelTime = 0;
+        double totalTime = 0;
+        double travelTime = 0;
 
         // travel from depot to the first patient
+        totalTime += travelMatrix[0][patients.get(0).key];
         travelTime += travelMatrix[0][patients.get(0).key];
 
         for (int i = 0; i < patients.size() - 1; i++) {
             TimeWindow current = patients.get(i).getTimeWindow();
-            if (travelTime < current.getStart()) {
+            if (totalTime < current.getStart()) {
                 // wait if the nurse is too early
-                travelTime += (current.getStart() - travelTime);
-            } else if (travelTime > current.getEnd()) {
+                totalTime += (current.getStart() - totalTime);
+            } else if (totalTime > current.getEnd()) {
                 // hard violation if the nurse is too late
                 timeWindowViolation += 2;
+                totalTime += travelMatrix[patients.get(i).key][patients.get(i + 1).key];
+                travelTime += travelMatrix[patients.get(i).key][patients.get(i + 1).key];
                 continue;
             }
             // nurse takes care of the patient
-            travelTime += patients.get(i).getCareTime();
+            totalTime += patients.get(i).getCareTime();
             // travel to the next patient
-            travelTime += travelMatrix[patients.get(i).key][patients.get(i + 1).key];
 
-            if (travelTime > current.getEnd()) {
+            if (totalTime > current.getEnd()) {
                 // nurse exceeds the time window
                 timeWindowViolation += 1;
             }
+
+            totalTime += travelMatrix[patients.get(i).key][patients.get(i + 1).key];
+            travelTime += travelMatrix[patients.get(i).key][patients.get(i + 1).key];
         }
 
         // travel from the last patient to the depot
+        totalTime += travelMatrix[patients.get(patients.size() - 1).key][0];
         travelTime += travelMatrix[patients.get(patients.size() - 1).key][0];
 
+        if (totalTime > returnTime) {
+            // hard violation if the nurse is too late at the depot
+            timeWindowViolation += 2;
+        }
+
         return travelTime * timeWindowViolation;
+    }
+
+    public boolean isFeasible(double[][] travelMatrix, int returnTime) {
+
+        boolean feasible = true;
+
+        if (patients.size() == 0) {
+            return feasible;
+        }
+
+        double totalTime = 0;
+        totalTime += travelMatrix[0][patients.get(0).key];
+
+        for (int i = 0; i < patients.size() - 1; i++) {
+            TimeWindow current = patients.get(i).getTimeWindow();
+            if (totalTime < current.getStart()) {
+                // wait if the nurse is too early
+                totalTime += (current.getStart() - totalTime);
+            } else if (totalTime > current.getEnd()) {
+                // hard violation if the nurse is too late
+                feasible = false;
+                totalTime += travelMatrix[patients.get(i).key][patients.get(i + 1).key];
+            }
+            // nurse takes care of the patient
+            totalTime += patients.get(i).getCareTime();
+            // travel to the next patient
+
+            if (totalTime > current.getEnd()) {
+                // nurse exceeds the time window
+                feasible = false;
+            }
+
+            totalTime += travelMatrix[patients.get(i).key][patients.get(i + 1).key];
+        }
+
+        // travel from the last patient to the depot
+        totalTime += travelMatrix[patients.get(patients.size() - 1).key][0];
+
+        if (totalTime > returnTime) {
+            // hard violation if the nurse is too late at the depot
+            feasible = false;
+        }
+
+        return feasible;
     }
 
     public String toString() {

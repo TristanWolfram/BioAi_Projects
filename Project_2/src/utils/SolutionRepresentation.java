@@ -13,12 +13,35 @@ public class SolutionRepresentation {
         return solution;
     }
 
-    public int getFitness(double[][] travelMatrix) {
-        int fitness = 0;
+    public double getFitness(double[][] travelMatrix, int return_time) {
+        double fitness = 0;
         for (Nurse route : solution) {
-            fitness += route.getFitnessOfRoute(travelMatrix);
+            fitness += route.getFitnessOfRoute(travelMatrix, return_time);
         }
         return fitness;
+    }
+
+    public int getPatientCount() {
+        int patientCount = 0;
+        for (Nurse route : solution) {
+            patientCount += route.getPatientCount();
+        }
+        return patientCount;
+    }
+
+    public boolean isFeasible(double[][] travelMatrix, int return_time) {
+        boolean feasible = true;
+        for (Nurse nurse : solution) {
+            if (nurse.getRoute().getTotalDemand() > nurse.getCapacity()) {
+                feasible = false;
+                return feasible;
+            }
+            if (!nurse.getRoute().isFeasible(travelMatrix, return_time)) {
+                feasible = false;
+                return feasible;
+            }
+        }
+        return feasible;
     }
 
     public String toString() {
@@ -31,9 +54,9 @@ public class SolutionRepresentation {
         return str;
     }
 
-    public String toStringSimple(double[][] travelMatrix) {
+    public String toStringSimple(double[][] travelMatrix, int returnTime) {
         String str = "Solution:\n";
-        str += "Fitness: " + getFitness(travelMatrix) + "\n";
+        str += "Fitness: " + getFitness(travelMatrix, returnTime) + "\n";
         return str;
     }
 }
