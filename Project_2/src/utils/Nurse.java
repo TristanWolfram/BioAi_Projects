@@ -10,7 +10,7 @@ public class Nurse {
     }
 
     public double getFitnessOfRoute(double[][] travelMatrix, int returnTime) {
-        double fitnessOfRoute = route.getTravelTime(travelMatrix, returnTime);
+        double fitnessOfRoute = route.getTravelTime();
 
         if (route.getTotalDemand() > capacity) {
             fitnessOfRoute += 2000.0;

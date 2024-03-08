@@ -4,9 +4,13 @@ import java.util.ArrayList;
 
 public class Route {
     private ArrayList<Patient> patients;
+    private double[][] travelMatrix;
+    private int returnTime;
 
-    public Route(ArrayList<Patient> patients) {
+    public Route(ArrayList<Patient> patients, double[][] travelMatrix, int returnTime) {
         this.patients = patients;
+        this.travelMatrix = travelMatrix;
+        this.returnTime = returnTime;
     }
 
     public int getTotalDemand() {
@@ -25,7 +29,7 @@ public class Route {
         return patients;
     }
 
-    public double getTravelTime(double[][] travelMatrix, int returnTime) {
+    public double getTravelTime() {
 
         if (patients.size() == 0) {
             return 0;
@@ -76,7 +80,7 @@ public class Route {
         return travelTime * timeWindowViolation;
     }
 
-    public boolean isFeasible(double[][] travelMatrix, int returnTime) {
+    public boolean isFeasible() {
 
         boolean feasible = true;
 
@@ -120,7 +124,14 @@ public class Route {
         return feasible;
     }
 
+    public void sortRouteStartTime() {
+        patients.sort((p1, p2) -> p1.getTimeWindow().getStart() - p2.getTimeWindow().getStart());
+    }
+
     public String toString() {
-        return "Route: " + patients;
+        return "Route(" + getTravelTime() + "):\t" + patients + "\n\tTotal demand: ---> "
+                + getTotalDemand()
+                + ",\tIs the route feasible: ---> "
+                + isFeasible();
     }
 }

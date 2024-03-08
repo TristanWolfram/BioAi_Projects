@@ -29,6 +29,12 @@ public class SolutionRepresentation {
         return patientCount;
     }
 
+    public void sortPatients() {
+        for (Nurse nurse : solution) {
+            nurse.getRoute().sortRouteStartTime();
+        }
+    }
+
     public boolean isFeasible(double[][] travelMatrix, int return_time) {
         boolean feasible = true;
         for (Nurse nurse : solution) {
@@ -36,7 +42,7 @@ public class SolutionRepresentation {
                 feasible = false;
                 return feasible;
             }
-            if (!nurse.getRoute().isFeasible(travelMatrix, return_time)) {
+            if (!nurse.getRoute().isFeasible()) {
                 feasible = false;
                 return feasible;
             }

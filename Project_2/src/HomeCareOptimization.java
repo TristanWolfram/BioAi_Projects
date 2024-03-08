@@ -80,10 +80,10 @@ public class HomeCareOptimization {
             throw new RuntimeException();
         }
 
-        int generations = 3000;
+        int generations = 3500;
         int populationSize = 200;
-        double mutationRate = 0.02;
-        double crossoverRate = 1;
+        double mutationRate = 0.015;
+        double crossoverRate = 0.9;
 
         int returnTime = depot.getReturnTime();
 

@@ -1,3 +1,4 @@
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -59,7 +60,7 @@ public class GeneticAlgorithm {
                     patienIndex++;
                 }
 
-                nurse.setRoute(new Route(routePatients));
+                nurse.setRoute(new Route(routePatients, travelTimes, returnTime));
 
                 individual.add(nurse);
             }
@@ -76,9 +77,18 @@ public class GeneticAlgorithm {
         for (int i = 0; i < generations; i++) {
             ArrayList<SolutionRepresentation> newPopulation = new ArrayList<SolutionRepresentation>();
 
-            ArrayList<SolutionRepresentation> parents = getParentsRouletteWheelSelect();
+            int parentPool = populationSize / 25;
+            if (parentPool % 2 != 0) {
+                parentPool++;
+            }
+            ArrayList<SolutionRepresentation> parents = getParentsRouletteWheelSelect(parentPool);
+            ArrayList<SolutionRepresentation> children = new ArrayList<SolutionRepresentation>();
 
-            ArrayList<SolutionRepresentation> children = crossover(parents.get(0), parents.get(1), 4);
+            for (int j = 0; j < parentPool; j += 2) {
+                if (Math.random() < crossoverRate) {
+                    children.addAll(crossover(parents.get(j), parents.get(j + 1), 2));
+                }
+            }
 
             for (SolutionRepresentation child : children) {
                 mutate(child);
@@ -88,7 +98,7 @@ public class GeneticAlgorithm {
 
             newPopulation = sortSolution(newPopulation);
             newPopulation = new ArrayList<>(population.subList(0, populationSize));
-            Collections.shuffle(newPopulation);
+            // Collections.shuffle(newPopulation);
 
             population = newPopulation;
 
@@ -104,15 +114,14 @@ public class GeneticAlgorithm {
         return best;
     }
 
-    private ArrayList<SolutionRepresentation> getParentsRouletteWheelSelect() {
+    private ArrayList<SolutionRepresentation> getParentsRouletteWheelSelect(int sizeParentPool) {
         ArrayList<SolutionRepresentation> parents = new ArrayList<SolutionRepresentation>();
 
-        parents.add(selectIndividualByRouletteWheel());
-        parents.add(selectIndividualByRouletteWheel());
-
-        // make sure parents are different
-        while (parents.get(0).equals(parents.get(1))) {
-            parents.set(1, selectIndividualByRouletteWheel());
+        while (parents.size() < sizeParentPool) {
+            SolutionRepresentation selected = selectIndividualByRouletteWheel();
+            if (!parents.contains(selected)) {
+                parents.add(selected);
+            }
         }
 
         return parents;
@@ -159,6 +168,7 @@ public class GeneticAlgorithm {
                 }
                 insertPatientBasedOnNeighbourhood(child1, patient);
             }
+            child1.sortPatients();
 
             // create child 2 out of parent 2
             for (Patient patient : Route1) {
@@ -168,15 +178,21 @@ public class GeneticAlgorithm {
                         nurse.getRoute().getPatients().remove(patient);
                     }
                 }
-                insertPatientBasedOnNurseWithFewestWorkload(parent2, patient);
+                insertPatientBasedOnNeighbourhood(child2, patient);
             }
+            child2.sortPatients();
 
-            if (child1.getFitness(travelTimes, returnTime) < parent1.getFitness(travelTimes, returnTime)) {
-                children.add(child1);
-            }
-            if (child2.getFitness(travelTimes, returnTime) < parent2.getFitness(travelTimes, returnTime)) {
-                children.add(child2);
-            }
+            assert child1.getPatientCount() == 100;
+            assert child2.getPatientCount() == 100;
+
+            // if (child1.getFitness(travelTimes, returnTime) <
+            // parent1.getFitness(travelTimes, returnTime)) {
+            // children.add(child1);
+            // }
+            // if (child2.getFitness(travelTimes, returnTime) <
+            // parent2.getFitness(travelTimes, returnTime)) {
+            // children.add(child2);
+            // }
             children.add(child1);
             children.add(child2);
         }
@@ -191,8 +207,17 @@ public class GeneticAlgorithm {
 
         for (Nurse nurse : solution.getSolution()) {
             if (nurse.getRoute().getPatients().contains(nearestNeighbor)) {
-                insertPatientInRoute(nurse.getRoute(), patient);
-                inserted = true;
+                if (nurse.getRoute().getPatients().size() >= 6) {
+                    insertPatientBasedOnNurseWithFewestWorkload(solution, patient);
+                    inserted = true;
+                    return;
+                } else {
+                    // insert patient next to nearest neighbor
+                    insertPatientNextToNeighbor(nurse.getRoute(), patient);
+                    inserted = true;
+                }
+                // insertPatientNextToNeighbor(nurse.getRoute(), patient);
+                // inserted = true;
             }
         }
 
@@ -228,6 +253,19 @@ public class GeneticAlgorithm {
         }
 
         route.getPatients().add(patient);
+    }
+
+    private void insertPatientNextToNeighbor(Route route, Patient patient) {
+        // find the best place to insert the patient
+        Patient nearestNeighbor = patient.getNearestPatient().getPatient();
+        int index = route.getPatients().indexOf(nearestNeighbor);
+        int curentPatientStartTime = patient.getTimeWindow().getStart();
+        int nearestNeighborStartTime = nearestNeighbor.getTimeWindow().getStart();
+        if (curentPatientStartTime < nearestNeighborStartTime) {
+            route.getPatients().add(index, patient);
+        } else {
+            route.getPatients().add(index + 1, patient);
+        }
     }
 
     // mutations
