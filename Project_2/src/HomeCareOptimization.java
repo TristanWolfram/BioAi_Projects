@@ -5,6 +5,8 @@ import org.json.simple.parser.ParseException;
 
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 
 import utils.*;
@@ -13,7 +15,7 @@ public class HomeCareOptimization {
     public static void main(String[] args) {
         System.out.println("\nThis is the new home care optimization system!");
 
-        String training_data = "train_0";
+        String training_data = "train_9";
 
         String name = null;
         int nbr_nurses = 0;
@@ -80,26 +82,43 @@ public class HomeCareOptimization {
             throw new RuntimeException();
         }
 
-        int generations = 3500;
+        int generations = 2000;
         int populationSize = 200;
-        double mutationRate = 0.015;
-        double crossoverRate = 0.9;
+        double mutationRate = 0.005;
+        double crossoverRate = 0.8;
 
         int returnTime = depot.getReturnTime();
 
-        GeneticAlgorithm ga = new GeneticAlgorithm(generations, populationSize, mutationRate, crossoverRate, nbr_nurses,
+        GeneticAlgorithm ga = new GeneticAlgorithm(generations, populationSize,
+                mutationRate, crossoverRate, nbr_nurses,
                 capacity_nurse,
                 patients, travelTimes, returnTime);
 
-        System.out.println("Starting algorithm ... \nGenerations: ->" + ga.generations + "\nPopulation Size: ->"
-                + ga.populationSize + "\nMutation Rate: ->" + ga.mutationRate + "\nCrossover Rate: ->"
+        System.out.println("Starting algorithm ... \nGenerations: ->" +
+                ga.generations + "\nPopulation Size: ->"
+                + ga.populationSize + "\nMutation Rate: ->" + ga.mutationRate + "\nCrossoverRate: ->"
                 + ga.crossoverRate);
 
         SolutionRepresentation best = ga.run();
 
         System.out.println(best);
 
-        System.out.println("Fitness: -> " + best.getFitness(travelTimes, returnTime));
-        System.out.println("Solution is feasible: -> " + best.isFeasible(travelTimes, returnTime));
+        System.out.println("Fitness: -> " + best.getFitness(travelTimes,
+                returnTime));
+        System.out.println("Solution is feasible: -> " + best.isFeasible(travelTimes,
+                returnTime));
+
+        // write the solution to a file
+        String export = best.exportToStringFormat();
+
+        try {
+            // Write the content to the file at filePath.
+            // This will create the file if it doesn't exist, or overwrite it if it does.
+            Files.write(Paths.get("Project_2/output/" + training_data + "_output.txt"), export.getBytes());
+            System.out.println("Successfully wrote to the file.");
+        } catch (IOException e) {
+            System.err.println("An error occurred while writing to the file.");
+            e.printStackTrace();
+        }
     }
 }

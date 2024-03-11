@@ -44,6 +44,10 @@ public class Patient {
         return careTime;
     }
 
+    public int getKey() {
+        return key;
+    }
+
     public Coordinate getCoordinate() {
         return coordinate;
     }

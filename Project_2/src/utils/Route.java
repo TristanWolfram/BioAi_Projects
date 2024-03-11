@@ -43,7 +43,7 @@ public class Route {
         totalTime += travelMatrix[0][patients.get(0).key];
         travelTime += travelMatrix[0][patients.get(0).key];
 
-        for (int i = 0; i < patients.size() - 1; i++) {
+        for (int i = 0; i < patients.size(); i++) {
             TimeWindow current = patients.get(i).getTimeWindow();
             if (totalTime < current.getStart()) {
                 // wait if the nurse is too early
@@ -51,9 +51,6 @@ public class Route {
             } else if (totalTime > current.getEnd()) {
                 // hard violation if the nurse is too late
                 timeWindowViolation += 2;
-                totalTime += travelMatrix[patients.get(i).key][patients.get(i + 1).key];
-                travelTime += travelMatrix[patients.get(i).key][patients.get(i + 1).key];
-                continue;
             }
             // nurse takes care of the patient
             totalTime += patients.get(i).getCareTime();
@@ -64,8 +61,10 @@ public class Route {
                 timeWindowViolation += 1;
             }
 
-            totalTime += travelMatrix[patients.get(i).key][patients.get(i + 1).key];
-            travelTime += travelMatrix[patients.get(i).key][patients.get(i + 1).key];
+            if (i < patients.size() - 1) {
+                totalTime += travelMatrix[patients.get(i).key][patients.get(i + 1).key];
+                travelTime += travelMatrix[patients.get(i).key][patients.get(i + 1).key];
+            }
         }
 
         // travel from the last patient to the depot
@@ -77,7 +76,11 @@ public class Route {
             timeWindowViolation += 2;
         }
 
-        return travelTime * timeWindowViolation;
+        if (timeWindowViolation > 1) {
+            return travelTime * timeWindowViolation * 2;
+        } else {
+            return travelTime;
+        }
     }
 
     public boolean isFeasible() {
@@ -91,7 +94,7 @@ public class Route {
         double totalTime = 0;
         totalTime += travelMatrix[0][patients.get(0).key];
 
-        for (int i = 0; i < patients.size() - 1; i++) {
+        for (int i = 0; i < patients.size(); i++) {
             TimeWindow current = patients.get(i).getTimeWindow();
             if (totalTime < current.getStart()) {
                 // wait if the nurse is too early
@@ -99,7 +102,6 @@ public class Route {
             } else if (totalTime > current.getEnd()) {
                 // hard violation if the nurse is too late
                 feasible = false;
-                totalTime += travelMatrix[patients.get(i).key][patients.get(i + 1).key];
             }
             // nurse takes care of the patient
             totalTime += patients.get(i).getCareTime();
@@ -110,7 +112,9 @@ public class Route {
                 feasible = false;
             }
 
-            totalTime += travelMatrix[patients.get(i).key][patients.get(i + 1).key];
+            if (i < patients.size() - 1) {
+                totalTime += travelMatrix[patients.get(i).key][patients.get(i + 1).key];
+            }
         }
 
         // travel from the last patient to the depot
@@ -133,5 +137,17 @@ public class Route {
                 + getTotalDemand()
                 + ",\tIs the route feasible: ---> "
                 + isFeasible();
+    }
+
+    public String exportToStringFormat() {
+        String str = "[";
+        for (int i = 0; i < patients.size(); i++) {
+            str += patients.get(i).getKey();
+            if (i < patients.size() - 1) {
+                str += ", ";
+            }
+        }
+        str += "]";
+        return str;
     }
 }

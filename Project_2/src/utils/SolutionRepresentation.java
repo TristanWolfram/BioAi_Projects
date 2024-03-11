@@ -65,4 +65,15 @@ public class SolutionRepresentation {
         str += "Fitness: " + getFitness(travelMatrix, returnTime) + "\n";
         return str;
     }
+
+    public String exportToStringFormat() {
+        String str = "[";
+        for (int i = 0; i < solution.size(); i++) {
+            str += solution.get(i).exportToStringFormat();
+            if (i != solution.size() - 1)
+                str += ",\n";
+        }
+        str += "]";
+        return str;
+    }
 }

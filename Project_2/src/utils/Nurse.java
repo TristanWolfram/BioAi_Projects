@@ -38,4 +38,8 @@ public class Nurse {
     public String toString() {
         return "Nurse: -> " + route;
     }
+
+    public String exportToStringFormat() {
+        return route.exportToStringFormat();
+    }
 }

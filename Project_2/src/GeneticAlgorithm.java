@@ -1,4 +1,3 @@
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -77,7 +76,7 @@ public class GeneticAlgorithm {
         for (int i = 0; i < generations; i++) {
             ArrayList<SolutionRepresentation> newPopulation = new ArrayList<SolutionRepresentation>();
 
-            int parentPool = populationSize / 25;
+            int parentPool = populationSize / 10;
             if (parentPool % 2 != 0) {
                 parentPool++;
             }
