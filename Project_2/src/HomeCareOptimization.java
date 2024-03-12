@@ -15,7 +15,7 @@ public class HomeCareOptimization {
     public static void main(String[] args) {
         System.out.println("\nThis is the new home care optimization system!");
 
-        String training_data = "train_9";
+        String training_data = "train_0";
 
         String name = null;
         int nbr_nurses = 0;
@@ -57,6 +57,19 @@ public class HomeCareOptimization {
                         (int) (long) patientObj.get("start_time"),
                         (int) (long) patientObj.get("end_time"),
                         (int) (long) patientObj.get("care_time")));
+            }
+
+            // for each patient calculate the distance to each other patient
+            for (Patient patient : patients) {
+                ArrayList<PatientDistancePair> currentDistances = new ArrayList<PatientDistancePair>();
+                for (Patient otherPatient : patients) {
+                    if (patient != otherPatient) {
+                        currentDistances.add(new PatientDistancePair(otherPatient, patient.distanceTo(otherPatient)));
+                    }
+                }
+
+                currentDistances.sort((pair1, pair2) -> pair1.compareTo(pair2));
+                patient.setDistances(currentDistances);
             }
 
             JSONArray travel_times = (JSONArray) project_json.get("travel_times");
@@ -101,10 +114,11 @@ public class HomeCareOptimization {
 
         SolutionRepresentation best = ga.run();
 
+        // SolutionRepresentation best = ga.getBestSolution();
+
         System.out.println(best);
 
-        System.out.println("Fitness: -> " + best.getFitness(travelTimes,
-                returnTime));
+        System.out.println("Fitness: -> " + best.getFitness());
         System.out.println("Solution is feasible: -> " + best.isFeasible(travelTimes,
                 returnTime));
 

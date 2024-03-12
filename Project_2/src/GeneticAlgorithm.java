@@ -2,6 +2,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import utils.*;
+import utils.KMeans.*;
 
 public class GeneticAlgorithm {
     int generations;
@@ -23,48 +24,33 @@ public class GeneticAlgorithm {
         this.travelTimes = travelTimes;
         this.returnTime = returnTime;
 
-        // normally you should check if patients.size() % nbrNurses == 0
-        // but the given json files always have 100 patients and 25 nurses
-        // -> this will always be 4
-        int patientsPerNurse = patients.size() / nbrNurses; // 4
-
         // for each individual in the population
         for (int i = 0; i < populationSize; i++) {
             Collections.shuffle(patients);
-            int patienIndex = 0;
+
+            // create clusters
+            ArrayList<Cluster> clusters = KMeans.kMeans(patients, 6, 2);
+            int numClusters = clusters.size();
+            int numRemainingNurses = nbrNurses - numClusters;
+
             ArrayList<Nurse> individual = new ArrayList<Nurse>();
 
-            // create 25 nurses
-            for (int j = 0; j < nbrNurses; j++) {
+            // create nurses
+            for (int j = 0; j < numClusters; j++) {
                 Nurse nurse = new Nurse(capacityNurse);
-
-                // with 4 patients each
-                ArrayList<Patient> routePatients = new ArrayList<Patient>();
-                for (int k = 0; k < patientsPerNurse; k++) {
-
-                    Patient currentPatient = patients.get(patienIndex);
-                    ArrayList<PatientDistancePair> currentDistances = new ArrayList<PatientDistancePair>();
-
-                    // find the nearest 3 patients
-                    for (Patient patient : patients) {
-                        if (patient.equals(currentPatient)) {
-                            continue;
-                        }
-                        currentDistances.add(new PatientDistancePair(patient, currentPatient.distanceTo(patient)));
-                    }
-                    currentDistances.sort((pair1, pair2) -> pair1.compareTo(pair2));
-                    currentPatient.setNearestThreePatients(new ArrayList<>(currentDistances.subList(0, 3)));
-                    routePatients.add(currentPatient);
-
-                    patienIndex++;
-                }
-
+                ArrayList<Patient> routePatients = clusters.get(j).getPatients();
                 nurse.setRoute(new Route(routePatients, travelTimes, returnTime));
-
+                individual.add(nurse);
+            }
+            for (int j = 0; j < numRemainingNurses; j++) {
+                Nurse nurse = new Nurse(capacityNurse);
+                nurse.setRoute(new Route(new ArrayList<Patient>(), travelTimes, returnTime));
                 individual.add(nurse);
             }
 
-            population.add(new SolutionRepresentation(individual));
+            SolutionRepresentation newInitialSolution = new SolutionRepresentation(individual);
+            newInitialSolution.sortPatients();
+            population.add(newInitialSolution);
         }
 
         System.out.println("Genetic Algorithm initialized!");
@@ -132,7 +118,7 @@ public class GeneticAlgorithm {
         double runningSum = 0;
 
         for (SolutionRepresentation solution : population) {
-            runningSum += solution.getFitness(travelTimes, returnTime);
+            runningSum += solution.getFitness();
             if (runningSum > random) {
                 return solution;
             }
@@ -184,14 +170,9 @@ public class GeneticAlgorithm {
             assert child1.getPatientCount() == 100;
             assert child2.getPatientCount() == 100;
 
-            // if (child1.getFitness(travelTimes, returnTime) <
-            // parent1.getFitness(travelTimes, returnTime)) {
-            // children.add(child1);
-            // }
-            // if (child2.getFitness(travelTimes, returnTime) <
-            // parent2.getFitness(travelTimes, returnTime)) {
-            // children.add(child2);
-            // }
+            removeSmallRoutes(child1);
+            removeSmallRoutes(child2);
+
             children.add(child1);
             children.add(child2);
         }
@@ -206,7 +187,8 @@ public class GeneticAlgorithm {
 
         for (Nurse nurse : solution.getSolution()) {
             if (nurse.getRoute().getPatients().contains(nearestNeighbor)) {
-                if (nurse.getRoute().getPatients().size() >= 6) {
+                // check if nurse has capacity
+                if ((nurse.getRoute().getTotalDemand() + patient.getDemand()) > nurse.getCapacity()) {
                     insertPatientBasedOnNurseWithFewestWorkload(solution, patient);
                     inserted = true;
                     return;
@@ -300,9 +282,25 @@ public class GeneticAlgorithm {
         insertPatientInRoute(solution.getSolution().get(newNurseIndex).getRoute(), patient);
     }
 
+    public void removeSmallRoutes(SolutionRepresentation solution) {
+
+        for (Nurse nurse : solution.getSolution()) {
+            if (nurse.getRoute().getPatients().size() == 1) {
+                Patient patient = nurse.getRoute().getPatients().remove(0);
+                insertPatientBasedOnNeighbourhood(solution, patient);
+            }
+        }
+    }
+
+    // TODO: implement distance check
+    // private SolutionRepresentation checkDistances(SolutionRepresentation
+    // solution) {
+
+    // }
+
     private ArrayList<SolutionRepresentation> sortSolution(ArrayList<SolutionRepresentation> currentPopulation) {
-        currentPopulation.sort((solution1, solution2) -> Double.compare(solution1.getFitness(travelTimes, returnTime),
-                solution2.getFitness(travelTimes, returnTime)));
+        currentPopulation.sort((solution1, solution2) -> Double.compare(solution1.getFitness(),
+                solution2.getFitness()));
 
         return currentPopulation;
     }
@@ -310,7 +308,7 @@ public class GeneticAlgorithm {
     public SolutionRepresentation getBestSolution() {
         SolutionRepresentation bestSolution = population.get(0);
         for (SolutionRepresentation solution : population) {
-            if (solution.getFitness(travelTimes, returnTime) < bestSolution.getFitness(travelTimes, returnTime)) {
+            if (solution.getFitness() < bestSolution.getFitness()) {
                 bestSolution = solution;
             }
         }
@@ -320,7 +318,7 @@ public class GeneticAlgorithm {
     public double getBestFitness() {
         double bestFitness = Integer.MAX_VALUE;
         for (SolutionRepresentation solution : population) {
-            double fitness = solution.getFitness(travelTimes, returnTime);
+            double fitness = solution.getFitness();
             if (fitness < bestFitness) {
                 bestFitness = fitness;
             }
@@ -331,7 +329,7 @@ public class GeneticAlgorithm {
     public double getAverageFitness() {
         double totalFitness = 0;
         for (SolutionRepresentation solution : population) {
-            totalFitness += solution.getFitness(travelTimes, returnTime);
+            totalFitness += solution.getFitness();
         }
         return totalFitness / populationSize;
     }
@@ -339,7 +337,7 @@ public class GeneticAlgorithm {
     public double getSumFitness() {
         double totalFitness = 0;
         for (SolutionRepresentation solution : population) {
-            totalFitness += solution.getFitness(travelTimes, returnTime);
+            totalFitness += solution.getFitness();
         }
         return totalFitness;
     }

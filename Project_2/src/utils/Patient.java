@@ -10,7 +10,7 @@ public class Patient {
 
     private Coordinate coordinate;
 
-    private ArrayList<PatientDistancePair> nearestThreePatients;
+    private ArrayList<PatientDistancePair> distances;
 
     public Patient(int key, int x_coord, int y_coord, int demand, int start_time, int end_time, int care_time) {
         this.key = key;
@@ -20,7 +20,7 @@ public class Patient {
 
         this.coordinate = new Coordinate(x_coord, y_coord);
 
-        this.nearestThreePatients = null;
+        this.distances = null;
     }
 
     public double distanceTo(Patient other) {
@@ -52,15 +52,15 @@ public class Patient {
         return coordinate;
     }
 
-    public void setNearestThreePatients(ArrayList<PatientDistancePair> nearestThreePatients) {
-        this.nearestThreePatients = nearestThreePatients;
+    public void setDistances(ArrayList<PatientDistancePair> distances) {
+        this.distances = distances;
     }
 
-    public ArrayList<PatientDistancePair> getNearestThreePatients() {
-        return nearestThreePatients;
+    public ArrayList<PatientDistancePair> getDistances() {
+        return distances;
     }
 
     public PatientDistancePair getNearestPatient() {
-        return nearestThreePatients.get(0);
+        return distances.get(0);
     }
 }

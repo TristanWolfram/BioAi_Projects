@@ -13,10 +13,10 @@ public class SolutionRepresentation {
         return solution;
     }
 
-    public double getFitness(double[][] travelMatrix, int return_time) {
+    public double getFitness() {
         double fitness = 0;
         for (Nurse route : solution) {
-            fitness += route.getFitnessOfRoute(travelMatrix, return_time);
+            fitness += route.getFitnessOfRoute();
         }
         return fitness;
     }
@@ -62,7 +62,7 @@ public class SolutionRepresentation {
 
     public String toStringSimple(double[][] travelMatrix, int returnTime) {
         String str = "Solution:\n";
-        str += "Fitness: " + getFitness(travelMatrix, returnTime) + "\n";
+        str += "Fitness: " + getFitness() + "\n";
         return str;
     }
 

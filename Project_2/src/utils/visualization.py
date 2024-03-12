@@ -4,7 +4,7 @@ import json
 import matplotlib.pyplot as plt
 import numpy as np
 
-training_set = 9
+training_set = 0
 
 # load patients
 file_path_train = f"Project_2/training/train_{training_set}.json"
@@ -23,6 +23,8 @@ solution_list = ast.literal_eval(solution)
 routes = {}
 for i in range(len(solution_list)):
     route = []
+    if len(solution_list[i]) == 0:
+        continue
     for j in range(len(solution_list[i])):
         route.append(
             [
@@ -45,6 +47,8 @@ for route in routes.values():
 
 # Highlight the depot
 plt.plot(depot[0], depot[1], "ko", markersize=10)
+
+plt.axis("equal")
 
 plt.title("Route Visualization")
 plt.xlabel("X Coordinate")

@@ -9,7 +9,7 @@ public class Nurse {
         this.capacity = capacity;
     }
 
-    public double getFitnessOfRoute(double[][] travelMatrix, int returnTime) {
+    public double getFitnessOfRoute() {
         double fitnessOfRoute = route.getTravelTime();
 
         if (route.getTotalDemand() > capacity) {
