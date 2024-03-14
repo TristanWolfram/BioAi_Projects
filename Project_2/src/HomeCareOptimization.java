@@ -24,6 +24,7 @@ public class HomeCareOptimization {
         ArrayList<Patient> patients = new ArrayList<Patient>();
         double[][] travelTimes = null;
 
+        // reading in json file
         try {
             String currentPath = new java.io.File(".").getCanonicalPath();
             JSONObject project_json = (JSONObject) new JSONParser()
@@ -95,7 +96,7 @@ public class HomeCareOptimization {
             throw new RuntimeException();
         }
 
-        int generations = 50000;
+        int generations = 2000;
         int populationSize = 500;
         double mutationRate = 0.025;
         double crossoverRate = 1;
@@ -109,8 +110,8 @@ public class HomeCareOptimization {
         // train_6 -> 5 cluster -> 30%
         // train_7 -> ??
         // train_8 -> 8 cluster -> 30% (almost)
-        // train_9 -> 11 cluster -> 30%
-        int startingClusters = 11;
+        // train_9 -> 11 cluster -> 20% (after 50000 generations tho)
+        int startingClusters = 10;
 
         int returnTime = depot.getReturnTime();
 
@@ -125,8 +126,6 @@ public class HomeCareOptimization {
                 + ga.crossoverRate);
 
         SolutionRepresentation best = ga.run();
-
-        // SolutionRepresentation best = ga.getBestSolution();
 
         System.out.println(best);
 
