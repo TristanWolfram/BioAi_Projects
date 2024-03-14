@@ -15,7 +15,7 @@ public class HomeCareOptimization {
     public static void main(String[] args) {
         System.out.println("\nThis is the new home care optimization system!");
 
-        String training_data = "train_0";
+        String training_data = "train_9";
 
         String name = null;
         int nbr_nurses = 0;
@@ -96,14 +96,16 @@ public class HomeCareOptimization {
         }
 
         int generations = 2000;
-        int populationSize = 200;
-        double mutationRate = 0.005;
-        double crossoverRate = 0.8;
+        int populationSize = 400;
+        double mutationRate = 0.015;
+        double crossoverRate = 1;
+
+        int startingClusters = 25;
 
         int returnTime = depot.getReturnTime();
 
         GeneticAlgorithm ga = new GeneticAlgorithm(generations, populationSize,
-                mutationRate, crossoverRate, nbr_nurses,
+                mutationRate, crossoverRate, startingClusters, nbr_nurses,
                 capacity_nurse,
                 patients, travelTimes, returnTime);
 

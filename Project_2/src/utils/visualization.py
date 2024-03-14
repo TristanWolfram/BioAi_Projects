@@ -4,7 +4,7 @@ import json
 import matplotlib.pyplot as plt
 import numpy as np
 
-training_set = 0
+training_set = 9
 
 # load patients
 file_path_train = f"Project_2/training/train_{training_set}.json"

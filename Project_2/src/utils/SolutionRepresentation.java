@@ -31,7 +31,7 @@ public class SolutionRepresentation {
 
     public void sortPatients() {
         for (Nurse nurse : solution) {
-            nurse.getRoute().sortRouteStartTime();
+            nurse.getRoute().sortByTimeBalanced();
         }
     }
 
@@ -48,6 +48,14 @@ public class SolutionRepresentation {
             }
         }
         return feasible;
+    }
+
+    public SolutionRepresentation copy() {
+        ArrayList<Nurse> clonedNurses = new ArrayList<Nurse>();
+        for (Nurse nurse : solution) {
+            clonedNurses.add(nurse.copy());
+        }
+        return new SolutionRepresentation(clonedNurses);
     }
 
     public String toString() {

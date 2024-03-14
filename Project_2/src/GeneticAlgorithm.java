@@ -9,18 +9,27 @@ public class GeneticAlgorithm {
     int populationSize;
     double mutationRate;
     double crossoverRate;
+    int startingClusters;
+    int nbrNurses;
+    int capacityNurse;
+    ArrayList<Patient> patients;
     double[][] travelTimes;
     int returnTime;
 
     ArrayList<SolutionRepresentation> population = new ArrayList<SolutionRepresentation>();
 
     public GeneticAlgorithm(int generations, int populationSize, double mutationRate, double crossoverRate,
+            int startingClusters,
             int nbrNurses, int capacityNurse, ArrayList<Patient> patients, double[][] travelTimes, int returnTime) {
         System.out.println("Initializing Genetic Algorithm...");
         this.generations = generations;
         this.populationSize = populationSize;
         this.mutationRate = mutationRate;
         this.crossoverRate = crossoverRate;
+        this.startingClusters = startingClusters;
+        this.nbrNurses = nbrNurses;
+        this.capacityNurse = capacityNurse;
+        this.patients = patients;
         this.travelTimes = travelTimes;
         this.returnTime = returnTime;
 
@@ -29,27 +38,7 @@ public class GeneticAlgorithm {
             Collections.shuffle(patients);
 
             // create clusters
-            ArrayList<Cluster> clusters = KMeans.kMeans(patients, 6, 2);
-            int numClusters = clusters.size();
-            int numRemainingNurses = nbrNurses - numClusters;
-
-            ArrayList<Nurse> individual = new ArrayList<Nurse>();
-
-            // create nurses
-            for (int j = 0; j < numClusters; j++) {
-                Nurse nurse = new Nurse(capacityNurse);
-                ArrayList<Patient> routePatients = clusters.get(j).getPatients();
-                nurse.setRoute(new Route(routePatients, travelTimes, returnTime));
-                individual.add(nurse);
-            }
-            for (int j = 0; j < numRemainingNurses; j++) {
-                Nurse nurse = new Nurse(capacityNurse);
-                nurse.setRoute(new Route(new ArrayList<Patient>(), travelTimes, returnTime));
-                individual.add(nurse);
-            }
-
-            SolutionRepresentation newInitialSolution = new SolutionRepresentation(individual);
-            newInitialSolution.sortPatients();
+            SolutionRepresentation newInitialSolution = createSolutionRepresentationKMeans();
             population.add(newInitialSolution);
         }
 
@@ -58,9 +47,36 @@ public class GeneticAlgorithm {
         System.out.println("Best soulution is feasible: " + getBestSolution().isFeasible(travelTimes, returnTime));
     }
 
+    private SolutionRepresentation createSolutionRepresentationKMeans() {
+        // create clusters
+        ArrayList<Cluster> clusters = KMeans.kMeans(patients, startingClusters, 2);
+        int numClusters = clusters.size();
+        int numRemainingNurses = nbrNurses - numClusters;
+
+        ArrayList<Nurse> individual = new ArrayList<Nurse>();
+
+        // create nurses
+        for (int j = 0; j < numClusters; j++) {
+            Nurse nurse = new Nurse(capacityNurse);
+            ArrayList<Patient> routePatients = clusters.get(j).getPatients();
+            nurse.setRoute(new Route(routePatients, travelTimes, returnTime));
+            individual.add(nurse);
+        }
+        for (int j = 0; j < numRemainingNurses; j++) {
+            Nurse nurse = new Nurse(capacityNurse);
+            nurse.setRoute(new Route(new ArrayList<Patient>(), travelTimes, returnTime));
+            individual.add(nurse);
+        }
+
+        SolutionRepresentation newInitialSolution = new SolutionRepresentation(individual);
+        newInitialSolution.sortPatients();
+
+        return newInitialSolution;
+    }
+
     public SolutionRepresentation run() {
         for (int i = 0; i < generations; i++) {
-            ArrayList<SolutionRepresentation> newPopulation = new ArrayList<SolutionRepresentation>();
+            ArrayList<SolutionRepresentation> newPopulation = new ArrayList<SolutionRepresentation>(population);
 
             int parentPool = populationSize / 10;
             if (parentPool % 2 != 0) {
@@ -82,10 +98,11 @@ public class GeneticAlgorithm {
             newPopulation.addAll(children);
 
             newPopulation = sortSolution(newPopulation);
-            newPopulation = new ArrayList<>(population.subList(0, populationSize));
-            // Collections.shuffle(newPopulation);
+            newPopulation = new ArrayList<>(newPopulation.subList(0, populationSize));
 
             population = newPopulation;
+
+            // System.out.println(i);
 
             if (i % 100 == 0) {
                 System.out.println("Generation: " + i + " | best fitness: " + getBestFitness() + " | average fitness: "
@@ -130,8 +147,11 @@ public class GeneticAlgorithm {
 
     private ArrayList<SolutionRepresentation> crossover(SolutionRepresentation parent1, SolutionRepresentation parent2,
             int number) {
+        if (parent1.getSolution().equals(parent2.getSolution())) {
+            SolutionRepresentation newRepresentation = createSolutionRepresentationKMeans();
+            parent2 = newRepresentation;
+        }
         ArrayList<SolutionRepresentation> children = new ArrayList<SolutionRepresentation>();
-
         for (int i = 0; i < number; i++) {
             // select random route from both parents
             int randomRoute1 = (int) (Math.random() * parent1.getSolution().size());
@@ -140,8 +160,8 @@ public class GeneticAlgorithm {
             ArrayList<Patient> Route1 = parent1.getSolution().get(randomRoute1).getRoute().getPatients();
             ArrayList<Patient> Route2 = parent2.getSolution().get(randomRoute2).getRoute().getPatients();
 
-            SolutionRepresentation child1 = new SolutionRepresentation(parent1.getSolution());
-            SolutionRepresentation child2 = new SolutionRepresentation(parent2.getSolution());
+            SolutionRepresentation child1 = parent1.copy();
+            SolutionRepresentation child2 = parent2.copy();
 
             // create child 1 out of parent 1
             for (Patient patient : Route2) {
@@ -167,11 +187,8 @@ public class GeneticAlgorithm {
             }
             child2.sortPatients();
 
-            assert child1.getPatientCount() == 100;
-            assert child2.getPatientCount() == 100;
-
-            removeSmallRoutes(child1);
-            removeSmallRoutes(child2);
+            checkDistances(child1);
+            checkDistances(child2);
 
             children.add(child1);
             children.add(child2);
@@ -217,6 +234,11 @@ public class GeneticAlgorithm {
         insertPatientInRoute(nurseWithViewestPatients.getRoute(), patient);
     }
 
+    private void insertPatientToRandomRoute(SolutionRepresentation solution, Patient patient) {
+        int randomNurseIndex = (int) (Math.random() * solution.getSolution().size());
+        insertPatientInRoute(solution.getSolution().get(randomNurseIndex).getRoute(), patient);
+    }
+
     private void insertPatientInRoute(Route route, Patient patient) {
 
         if (route.getPatients().size() == 0) {
@@ -234,6 +256,11 @@ public class GeneticAlgorithm {
         }
 
         route.getPatients().add(patient);
+    }
+
+    private void insertPatientInRouteRandom(Route route, Patient patient) {
+        int randomIndex = (int) (Math.random() * route.getPatients().size());
+        route.getPatients().add(randomIndex, patient);
     }
 
     private void insertPatientNextToNeighbor(Route route, Patient patient) {
@@ -256,13 +283,21 @@ public class GeneticAlgorithm {
         for (Nurse nurse : solution.getSolution()) {
             for (int i = 0; i < nurse.getRoute().getPatients().size(); i++) {
                 if (Math.random() < mutationRate) {
-                    int mutation = (int) (Math.random() * 2);
+                    int mutation = (int) (Math.random() * 4);
                     switch (mutation) {
                         case 0:
                             mutateByReordering(nurse.getRoute(), i);
                             break;
                         case 1:
-                            mutateBySwappingNurse(solution, nurse.getRoute().getPatients().remove(i));
+                            mutateBySwitchingNurse(solution, nurse.getRoute().getPatients().remove(i));
+                            break;
+                        case 2:
+                            mutateBySwappingTwoPatients(nurse.getRoute(), i);
+                            break;
+                        case 3:
+                            mutateBySwappingPatientsBetweenNurses(solution, nurse.getRoute(),
+                                    nurse.getRoute().getPatients().remove(i));
+                            break;
                         default:
                             break;
                     }
@@ -274,29 +309,69 @@ public class GeneticAlgorithm {
 
     private void mutateByReordering(Route route, int idx) {
         Patient patient = route.getPatients().remove(idx);
-        insertPatientInRoute(route, patient);
+        insertPatientInRouteRandom(route, patient);
     }
 
-    private void mutateBySwappingNurse(SolutionRepresentation solution, Patient patient) {
+    private void mutateBySwitchingNurse(SolutionRepresentation solution, Patient patient) {
         int newNurseIndex = (int) (Math.random() * solution.getSolution().size());
-        insertPatientInRoute(solution.getSolution().get(newNurseIndex).getRoute(), patient);
+        insertPatientInRouteRandom(solution.getSolution().get(newNurseIndex).getRoute(), patient);
     }
 
-    public void removeSmallRoutes(SolutionRepresentation solution) {
+    private void mutateBySwappingTwoPatients(Route route, int idx) {
+        int randomIndex = (int) (Math.random() * route.getPatients().size());
+        Collections.swap(route.getPatients(), idx, randomIndex);
+    }
 
-        for (Nurse nurse : solution.getSolution()) {
-            if (nurse.getRoute().getPatients().size() == 1) {
-                Patient patient = nurse.getRoute().getPatients().remove(0);
-                insertPatientBasedOnNeighbourhood(solution, patient);
-            }
+    private void mutateBySwappingPatientsBetweenNurses(SolutionRepresentation solution, Route route, Patient patient) {
+        int randomNurseIndex = (int) (Math.random() * solution.getSolution().size());
+        Nurse nurse = solution.getSolution().get(randomNurseIndex);
+        if (nurse.getRoute().getPatients().size() == 0) {
+            nurse.getRoute().getPatients().add(patient);
+        } else {
+            int randomPatientIndex = (int) (Math.random() * nurse.getRoute().getPatients().size());
+            Patient randomPatient = nurse.getRoute().getPatients().remove(randomPatientIndex);
+            insertPatientInRouteRandom(route, randomPatient);
+            insertPatientInRouteRandom(nurse.getRoute(), patient);
         }
     }
 
-    // TODO: implement distance check
-    // private SolutionRepresentation checkDistances(SolutionRepresentation
-    // solution) {
-
-    // }
+    private void checkDistances(SolutionRepresentation solution) {
+        // checks the distances in a solution.
+        // loops over each route and over the patiens
+        // if the distance between two patients is greater than 50, the route is split
+        // lost patiens get reinserted
+        for (Nurse nurse : solution.getSolution()) {
+            int size = nurse.getRoute().getPatients().size();
+            if (size == 1) {
+                Patient patient = nurse.getRoute().getPatients().remove(0);
+                insertPatientBasedOnNeighbourhood(solution, patient);
+            } else if (size > 1) {
+                ArrayList<Patient> removedPatients = new ArrayList<Patient>();
+                ArrayList<Patient> patients = nurse.getRoute().getPatients();
+                int breakPoint = 0;
+                for (int i = 0; i < size - 1; i++) {
+                    Patient patient = patients.get(i);
+                    Patient nextPatient = patients.get(i + 1);
+                    if (patient.distanceTo(nextPatient) > 50) {
+                        breakPoint = i;
+                        break;
+                    }
+                }
+                if (breakPoint != 0) {
+                    removedPatients.addAll(new ArrayList<Patient>(patients.subList(breakPoint, size)));
+                    patients.removeAll(removedPatients);
+                }
+                for (Patient patient : removedPatients) {
+                    Patient neighbor = patient.getNearestPatient().getPatient();
+                    if (removedPatients.contains(neighbor)) {
+                        insertPatientToRandomRoute(solution, patient);
+                    } else {
+                        insertPatientBasedOnNeighbourhood(solution, patient);
+                    }
+                }
+            }
+        }
+    }
 
     private ArrayList<SolutionRepresentation> sortSolution(ArrayList<SolutionRepresentation> currentPopulation) {
         currentPopulation.sort((solution1, solution2) -> Double.compare(solution1.getFitness(),

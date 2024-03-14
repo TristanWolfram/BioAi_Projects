@@ -132,6 +132,22 @@ public class Route {
         patients.sort((p1, p2) -> p1.getTimeWindow().getStart() - p2.getTimeWindow().getStart());
     }
 
+    public void sortRouteEndTime() {
+        patients.sort((p1, p2) -> p1.getTimeWindow().getEnd() - p2.getTimeWindow().getEnd());
+    }
+
+    public void sortByTimeBalanced() {
+        patients.sort((p1, p2) -> p1.getTimeWindow().getMiddleTime() - p2.getTimeWindow().getMiddleTime());
+    }
+
+    public Route copy() {
+        ArrayList<Patient> clonedPatients = new ArrayList<Patient>();
+        for (Patient patient : patients) {
+            clonedPatients.add(patient);
+        }
+        return new Route(clonedPatients, travelMatrix, returnTime);
+    }
+
     public String toString() {
         return "Route(" + getTravelTime() + "):\t" + patients + "\n\tTotal demand: ---> "
                 + getTotalDemand()

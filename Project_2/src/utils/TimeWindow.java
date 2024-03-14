@@ -17,6 +17,10 @@ public class TimeWindow {
         return end;
     }
 
+    public int getMiddleTime() {
+        return (start + end) / 2;
+    }
+
     public String toString() {
         return "(" + start + ", " + end + ")";
     }

@@ -35,6 +35,12 @@ public class Nurse {
         return capacity;
     }
 
+    public Nurse copy() {
+        Nurse nurse = new Nurse(capacity);
+        nurse.setRoute(route.copy());
+        return nurse;
+    }
+
     public String toString() {
         return "Nurse: -> " + route;
     }
