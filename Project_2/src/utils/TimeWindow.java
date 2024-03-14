@@ -22,6 +22,6 @@ public class TimeWindow {
     }
 
     public String toString() {
-        return "(" + start + ", " + end + ")";
+        return "[" + start + " - " + end + "]";
     }
 }

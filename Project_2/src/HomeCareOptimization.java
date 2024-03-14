@@ -95,12 +95,22 @@ public class HomeCareOptimization {
             throw new RuntimeException();
         }
 
-        int generations = 2000;
-        int populationSize = 400;
-        double mutationRate = 0.015;
+        int generations = 50000;
+        int populationSize = 500;
+        double mutationRate = 0.025;
         double crossoverRate = 1;
 
-        int startingClusters = 25;
+        // train_0 -> 10 cluster -> hitting benchmark
+        // train_1 -> 8 cluster
+        // train_2 -> 20 cluster
+        // train_3 -> 11 cluster -> hitting benchmark
+        // train_4 -> 20 cluster -> 20%
+        // train_5 -> 5 cluster -> 30%
+        // train_6 -> 5 cluster -> 30%
+        // train_7 -> ??
+        // train_8 -> 8 cluster -> 30% (almost)
+        // train_9 -> 11 cluster -> 30%
+        int startingClusters = 11;
 
         int returnTime = depot.getReturnTime();
 

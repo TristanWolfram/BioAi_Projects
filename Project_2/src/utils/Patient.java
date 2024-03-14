@@ -29,7 +29,7 @@ public class Patient {
     }
 
     public String toString() {
-        return "Patient: " + key;
+        return "(" + key + ") -> " + timeWindow;
     }
 
     public int getDemand() {
