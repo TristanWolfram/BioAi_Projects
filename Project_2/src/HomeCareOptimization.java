@@ -2,6 +2,8 @@ import org.json.simple.JSONObject;
 import org.json.simple.JSONArray;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+// in order to run the code you'll need to add the json-simple-1.1.1.jar to the classpath
+// -> https://code.google.com/archive/p/json-simple/downloads
 
 import java.io.FileReader;
 import java.io.IOException;
