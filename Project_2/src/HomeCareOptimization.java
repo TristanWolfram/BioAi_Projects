@@ -17,7 +17,7 @@ public class HomeCareOptimization {
     public static void main(String[] args) {
         System.out.println("\nThis is the new home care optimization system!");
 
-        String training_data = "train_9";
+        String training_data = "test_0";
 
         String name = null;
         int nbr_nurses = 0;
@@ -113,7 +113,7 @@ public class HomeCareOptimization {
         // train_7 -> ??
         // train_8 -> 8 cluster -> 30% (almost)
         // train_9 -> 11 cluster -> 20% (after 50000 generations tho)
-        int startingClusters = 10;
+        int startingClusters = 1;
 
         int returnTime = depot.getReturnTime();
 

@@ -4,16 +4,16 @@ import json
 import matplotlib.pyplot as plt
 import numpy as np
 
-training_set = 9
+training_set = 2
 
 # load patients
-file_path_train = f"Project_2/training/train_{training_set}.json"
+file_path_train = f"Project_2/training/test_{training_set}.json"
 with open(file_path_train, "r") as json_file:
     data = json.load(json_file)
 patients = data["patients"]
 
 # load solution
-file_path_solution = f"Project_2/output/train_{training_set}_output.txt"
+file_path_solution = f"Project_2/output/test_{training_set}_output.txt"
 with open(file_path_solution, "r") as file:
     solution = file.read()
 solution_list = ast.literal_eval(solution)
