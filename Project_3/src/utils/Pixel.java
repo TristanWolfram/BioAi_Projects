@@ -4,6 +4,9 @@ import java.util.ArrayList;
 
 public class Pixel {
     private final int key;
+
+    public PossibleConnections NONE;
+
     private RGBRepresentation color;
     public ArrayList<Pixel> neighbors;
 
@@ -26,5 +29,9 @@ public class Pixel {
 
     public ArrayList<Pixel> getNeighbors() {
         return neighbors;
+    }
+
+    public String toString() {
+        return "" + key;
     }
 }

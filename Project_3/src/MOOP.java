@@ -2,12 +2,11 @@ import utils.Image;
 import utils.Pixel;
 import utils.RGBRepresentation;
 import javax.imageio.ImageIO;
-import javax.swing.ImageIcon;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.ArrayList;
 
 public class MOOP {
     public static void main(String[] args) {
@@ -27,14 +26,9 @@ public class MOOP {
 
         Image img = loadImage(imgPath);
         img.printImage();
+        // img.show();
 
-        BufferedImage image = img.toBufferedImage();
-
-        JLabel label = new JLabel(new ImageIcon(image));
-        frame.add(label);
-        frame.pack();
-        frame.setLocationRelativeTo(null);
-        frame.setVisible(true);
+        System.out.println(img.getPixels()[0][0].getKey() + " " + img.getPixels()[0][0].getNeighbors());
     }
 
     public static Image loadImage(String path) {
@@ -53,17 +47,21 @@ public class MOOP {
 
             for (int y = 0; y < hight; y++) {
                 for (int x = 0; x < width; x++) {
+                    // Get the RGB value of the pixel
                     int rgbValue = imgBuf.getRGB(x, y);
                     int red = (rgbValue >> 16) & 0xff;
                     int green = (rgbValue >> 8) & 0xff;
                     int blue = (rgbValue) & 0xff;
-
                     RGBRepresentation color = new RGBRepresentation(red, green, blue);
+
                     Pixel p = new Pixel(pixelID, color);
                     img.setPixel(y, x, p);
                     pixelID++;
                 }
             }
+
+            img.generateNeighbors();
+
             System.out.println("Image loaded successfully");
             return img;
         } catch (Exception e) {
