@@ -14,7 +14,7 @@ public class MOOP {
         frame.setTitle("Image Display");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        String imgPath = "/../img_data_set/BSDS300-images/BSDS300/images/train/370036.jpg";
+        String imgPath = "Project_3/training_imgs/86016/Test image.jpg";
 
         Image img = loadImage(imgPath);
         img.printImage();
@@ -42,10 +42,7 @@ public class MOOP {
     public static Image loadImage(String path) {
 
         try {
-            String currentDir = new java.io.File(".").getCanonicalPath();
-            System.out.println("Current path: " + currentDir);
-
-            BufferedImage imgBuf = ImageIO.read(new File(currentDir + path));
+            BufferedImage imgBuf = ImageIO.read(new File(path));
             // imgBuf = ImageIO.read(new File("test.png"));
             System.out.println("Found image with width: " + imgBuf.getWidth() + " and height: " + imgBuf.getHeight());
             Image img = new Image(imgBuf.getHeight(), imgBuf.getWidth());
