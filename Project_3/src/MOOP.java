@@ -31,10 +31,10 @@ public class MOOP {
         System.out.println("test");
 
         // System.out.println(GA.getPopulation().get(0));
-        // GA.getPopulation().get(0).generateSegments();
+        GA.getPopulation().get(0).generateSegments();
         // System.out.println(GA.getPopulation().get(0).getSegments().size());
 
-        System.out.println(GA.getPopulation().get(0).getSolution().get(4563).getDistance());
+        System.out.println(GA.getPopulation().get(0).getSolution().get(20).getDistance());
 
         GA.run();
     }

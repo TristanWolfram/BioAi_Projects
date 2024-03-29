@@ -32,13 +32,59 @@ public class SolutionRepresentation {
 
         ArrayList<Segment> segments = new ArrayList<>();
 
-        for (Pixel p : solution) {
-            if (!p.assigned) {
-                Segment s = new Segment();
-                depthFirstSearch(p, s);
-                segments.add(s);
+        ArrayList<Pixel> pixelQueue = new ArrayList<>(solution);
+        int iterations = 0;
+        while (!pixelQueue.isEmpty()) {
+
+            Pixel currentPixel = pixelQueue.get(0);
+
+            ArrayList<Pixel> visited = new ArrayList<>();
+            visited.add(currentPixel);
+
+            boolean createNewSegment = true;
+            boolean endTraverse = false;
+            while (endTraverse == false) {
+                Pixel next = currentPixel.getConnectedNeighbor();
+                if (next == null) {
+                    endTraverse = true;
+                } else {
+                    if (next.assigned == true) {
+                        endTraverse = true;
+                        createNewSegment = false;
+                    } else if (visited.contains(next)) {
+                        endTraverse = true;
+                    } else {
+                        visited.add(next);
+                        currentPixel = next;
+                    }
+                }
             }
+
+            if (createNewSegment) {
+                Segment s = new Segment();
+                s.setSegment(visited);
+                markPixelAsAssigned(visited);
+                assignPixelsToSegment(visited, s);
+                segments.add(s);
+            } else {
+                Pixel pixelInSegment = visited.get(visited.size() -
+                        1).getConnectedNeighbor();
+                Segment s = findSegment(pixelInSegment);
+                assignPixelsToSegment(visited, s);
+                s.getSegment().addAll(visited);
+            }
+
+            pixelQueue.removeAll(visited);
+            System.out.println("Iterations: " + iterations++);
         }
+
+        // for (Pixel p : solution) {
+        // if (!p.assigned) {
+        // Segment s = new Segment();
+        // depthFirstSearch(p, s);
+        // segments.add(s);
+        // }
+        // }
 
         System.out.println("Segments: " + segments.size());
 

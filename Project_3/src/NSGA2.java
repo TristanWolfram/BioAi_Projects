@@ -45,7 +45,7 @@ public class NSGA2 {
                 // set connection of the pixel to a random one
                 p.setConnection(
                         PossibleConnections.values()[(int) (Math.random() *
-                                PossibleConnections.values().length)]);
+                                4)]);
                 // p.setConnection(PossibleConnections.RIGHT);
                 solution.add(p);
             }
