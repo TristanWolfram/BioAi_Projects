@@ -10,14 +10,6 @@ import java.util.ArrayList;
 
 public class MOOP {
     public static void main(String[] args) {
-        System.out.println("Hello, MOOP!");
-
-        RGBRepresentation rgb = new RGBRepresentation(255, 255, 255);
-        System.out.println("Color: " + rgb);
-
-        Pixel pixel = new Pixel(0, rgb);
-        System.out.println("Key: " + pixel.getKey() + pixel.getNeighbors());
-
         JFrame frame = new JFrame();
         frame.setTitle("Image Display");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -26,9 +18,25 @@ public class MOOP {
 
         Image img = loadImage(imgPath);
         img.printImage();
+        System.out.println("\n");
         // img.show();
 
-        System.out.println(img.getPixels()[0][0].getKey() + " " + img.getPixels()[0][0].getNeighbors());
+        // Testing the neighbors
+        // System.out.println(img.getPixels()[0][0].getKey() + " " +
+        // img.getPixels()[0][0].getNeighbors());
+
+        int generations = 100;
+        int populationSize = 100;
+        SPEA2 GA = new SPEA2(img, generations, populationSize);
+        System.out.println("test");
+
+        // System.out.println(GA.getPopulation().get(0));
+        // GA.getPopulation().get(0).generateSegments();
+        // System.out.println(GA.getPopulation().get(0).getSegments().size());
+
+        System.out.println(GA.getPopulation().get(0).getSolution().get(4563).getDistance());
+
+        GA.run();
     }
 
     public static Image loadImage(String path) {
@@ -38,6 +46,7 @@ public class MOOP {
             System.out.println("Current path: " + currentDir);
 
             BufferedImage imgBuf = ImageIO.read(new File(currentDir + path));
+            // imgBuf = ImageIO.read(new File("test.png"));
             System.out.println("Found image with width: " + imgBuf.getWidth() + " and height: " + imgBuf.getHeight());
             Image img = new Image(imgBuf.getHeight(), imgBuf.getWidth());
 
