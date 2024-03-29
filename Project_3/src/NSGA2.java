@@ -2,7 +2,7 @@ import java.util.ArrayList;
 
 import utils.*;
 
-public class SPEA2 {
+public class NSGA2 {
     private final Image img;
     final int populationLength; // img_hight * img_width
     int populationSize;
@@ -10,7 +10,7 @@ public class SPEA2 {
 
     ArrayList<SolutionRepresentation> population;
 
-    public SPEA2(Image img, int generations, int populationSize) {
+    public NSGA2(Image img, int generations, int populationSize) {
         this.img = img;
         this.populationLength = img.getHight() * img.getWidth();
         this.generations = generations;

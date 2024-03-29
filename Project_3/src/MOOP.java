@@ -27,7 +27,7 @@ public class MOOP {
 
         int generations = 100;
         int populationSize = 100;
-        SPEA2 GA = new SPEA2(img, generations, populationSize);
+        NSGA2 GA = new NSGA2(img, generations, populationSize);
         System.out.println("test");
 
         // System.out.println(GA.getPopulation().get(0));
