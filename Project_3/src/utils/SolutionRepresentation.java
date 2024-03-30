@@ -75,7 +75,7 @@ public class SolutionRepresentation {
             }
 
             pixelQueue.removeAll(visited);
-            System.out.println("Iterations: " + iterations++);
+//            System.out.println("Iterations: " + iterations++);
         }
 
         // for (Pixel p : solution) {

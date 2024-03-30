@@ -4,55 +4,48 @@ import utils.*;
 
 public class NSGA2 {
     private final Image img;
-    final int populationLength; // img_hight * img_width
-    int populationSize;
-    int generations;
+    private final int populationLength; // img_hight * img_width
+    private int generations;
+    private int amountOfSeconds;
+    private boolean useTime;
+    private double crossoverRate;
+    private double individualMutationRate;
+    private double probDistOfDifferentMutationTypes;
+    private int populationSize;
+    private int amountOfParents;
+    private boolean useSmartPopGeneration;
+    private ArrayList<SolutionRepresentation> population;
 
-    ArrayList<SolutionRepresentation> population;
-
-    public NSGA2(Image img, int generations, int populationSize) {
+    public NSGA2(Image img, String imgPath, int generations, int populationSize, int amountOfSeconds, boolean useTime, double crossoverRate, double individualMutationRate, double probDistOfDifferentMutationTypes, int amountOfParents, boolean useSmartPopGeneration) {
         this.img = img;
         this.populationLength = img.getHight() * img.getWidth();
         this.generations = generations;
-        this.populationSize = populationSize;
+        this.amountOfSeconds = amountOfSeconds;
+        this.useTime = useTime;
 
-        this.population = generatePopulation();
+        this.crossoverRate = crossoverRate;
+        // prob of a individual getting a mutation
+        this.individualMutationRate = individualMutationRate;
+        // Prob of different mutation types; 0.4 40% small swap, 60% big swap
+        this.probDistOfDifferentMutationTypes = probDistOfDifferentMutationTypes;
+
+        this.populationSize = populationSize;
+        this.amountOfParents = amountOfParents;
+        this.useSmartPopGeneration = useSmartPopGeneration;
+        this.population = null;
+
+        //init pop
+        if (this.useSmartPopGeneration){
+            population = InitPop.generateSmartPopulation(populationSize, img, populationLength);
+        } else {
+            population = InitPop.generatePopulation(populationSize, img);
+        }
 
         System.out.println("Initialized the genetic algortihm with:\n" + "Generations: " + generations
                 + "\nPopulation size: " + populationSize + "\nInput image: " + img.getHight() + "x" + img.getWidth()
                 + "\n");
     }
 
-    private ArrayList<SolutionRepresentation> generatePopulation() {
-        ArrayList<SolutionRepresentation> population = new ArrayList<SolutionRepresentation>();
-
-        for (int i = 0; i < populationSize; i++) {
-            population.add(generateSolutionRand());
-        }
-
-        return population;
-    }
-
-    private SolutionRepresentation generateSolutionRand() {
-
-        ArrayList<Pixel> solution = new ArrayList<Pixel>();
-
-        // flatten img
-        Pixel[][] pixels = img.getPixels();
-        for (int i = 0; i < img.getHight(); i++) {
-            for (int j = 0; j < img.getWidth(); j++) {
-                Pixel p = pixels[i][j];
-                // set connection of the pixel to a random one
-                p.setConnection(
-                        PossibleConnections.values()[(int) (Math.random() *
-                                4)]);
-                // p.setConnection(PossibleConnections.RIGHT);
-                solution.add(p);
-            }
-        }
-
-        return new SolutionRepresentation(solution, img.getWidth());
-    }
 
     public void run() {
         System.out.println("Running the genetic algorithm");

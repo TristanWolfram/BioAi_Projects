@@ -1,12 +1,7 @@
 import utils.Image;
-import utils.Pixel;
-import utils.RGBRepresentation;
-import javax.imageio.ImageIO;
-import javax.swing.JFrame;
+import utils.InitPop;
 
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.util.ArrayList;
+import javax.swing.JFrame;
 
 public class MOOP {
     public static void main(String[] args) {
@@ -15,8 +10,10 @@ public class MOOP {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         String imgPath = "Project_3/training_imgs/86016/Test image.jpg";
+        //imgPath = "Project_3/training_imgs/ForTesting3x3White.jpg";
+        //imgPath = "Project_3/training_imgs/ForTesting10x10White.jpg";
 
-        Image img = loadImage(imgPath);
+        Image img = InitPop.loadImage(imgPath);
         img.printImage();
         System.out.println("\n");
         // img.show();
@@ -25,56 +22,25 @@ public class MOOP {
         // System.out.println(img.getPixels()[0][0].getKey() + " " +
         // img.getPixels()[0][0].getNeighbors());
 
-        int generations = 100;
-        int populationSize = 100;
-        NSGA2 GA = new NSGA2(img, generations, populationSize);
-        System.out.println("test");
+        int generations = 500;
+        int populationSize = 1;
+        int amountOfSeconds = 360;
+        boolean useTime = false;
+        double crossoverRate = 0.8;
+        double individualMutationRate = 0.2;
+        double probDistOfDifferentMutationTypes = 0.5;
+        int amountOfParents = 120;
+        boolean useSmartPopGeneration = true;
 
-        // System.out.println(GA.getPopulation().get(0));
+        NSGA2 GA = new NSGA2(img, imgPath, generations, populationSize, amountOfSeconds, useTime, crossoverRate, individualMutationRate, probDistOfDifferentMutationTypes, amountOfParents, useSmartPopGeneration);
+        //System.out.println("test");
+
+        System.out.println(GA.getPopulation().get(0));
         GA.getPopulation().get(0).generateSegments();
-        // System.out.println(GA.getPopulation().get(0).getSegments().size());
+        System.out.println(GA.getPopulation().get(0).getSegments().size());
 
-        System.out.println(GA.getPopulation().get(0).getSolution().get(20).getDistance());
+        System.out.println(GA.getPopulation().get(0).getSolution().get(0).getDistance());
 
         GA.run();
-    }
-
-    public static Image loadImage(String path) {
-
-        try {
-            BufferedImage imgBuf = ImageIO.read(new File(path));
-            // imgBuf = ImageIO.read(new File("test.png"));
-            System.out.println("Found image with width: " + imgBuf.getWidth() + " and height: " + imgBuf.getHeight());
-            Image img = new Image(imgBuf.getHeight(), imgBuf.getWidth());
-
-            int pixelID = 0;
-            int hight = imgBuf.getHeight();
-            int width = imgBuf.getWidth();
-
-            for (int y = 0; y < hight; y++) {
-                for (int x = 0; x < width; x++) {
-                    // Get the RGB value of the pixel
-                    int rgbValue = imgBuf.getRGB(x, y);
-                    int red = (rgbValue >> 16) & 0xff;
-                    int green = (rgbValue >> 8) & 0xff;
-                    int blue = (rgbValue) & 0xff;
-                    RGBRepresentation color = new RGBRepresentation(red, green, blue);
-
-                    Pixel p = new Pixel(pixelID, color);
-                    img.setPixel(y, x, p);
-                    pixelID++;
-                }
-            }
-
-            img.generateNeighbors();
-
-            System.out.println("Image loaded successfully");
-            return img;
-        } catch (Exception e) {
-            System.out.println("Error: " + e);
-        }
-
-        System.out.println("Error: Could not load image");
-        return null;
     }
 }

@@ -66,6 +66,9 @@ public class Pixel {
     }
 
     public String toString() {
+        if (key < 10){
+            return key + " [" + getConnectionString() + "]";
+        }
         return key + "[" + getConnectionString() + "]";
     }
 
