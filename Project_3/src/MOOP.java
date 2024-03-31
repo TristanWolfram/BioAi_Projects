@@ -32,7 +32,12 @@ public class MOOP {
         int amountOfParents = 120;
         boolean useSmartPopGeneration = true;
 
-        NSGA2 GA = new NSGA2(img, imgPath, generations, populationSize, amountOfSeconds, useTime, crossoverRate, individualMutationRate, probDistOfDifferentMutationTypes, amountOfParents, useSmartPopGeneration);
+        boolean useFrontier = false;
+        double edgeScoreMulti = 0.3;
+        double connectivityScoreMulti = 0.4;
+        double deviationScoreMulti = 0.4;
+
+        NSGA2 GA = new NSGA2(img, imgPath, generations, populationSize, amountOfSeconds, useTime, crossoverRate, individualMutationRate, probDistOfDifferentMutationTypes, amountOfParents, useSmartPopGeneration, useFrontier, edgeScoreMulti, connectivityScoreMulti, deviationScoreMulti);
         //System.out.println("test");
 
         System.out.println(GA.getPopulation().get(0));

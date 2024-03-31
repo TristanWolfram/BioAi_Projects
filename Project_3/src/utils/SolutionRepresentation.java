@@ -8,10 +8,16 @@ public class SolutionRepresentation {
     private final int imgWidth;
     private ArrayList<Segment> segments = new ArrayList<>();
     private HashMap<Pixel, Segment> pixelSegmentMap = new HashMap<>();
+    private double edgeValueScore;
+    private double connectivityScore;
+    private double deviationScore;
 
     public SolutionRepresentation(ArrayList<Pixel> solution, int imgWidth) {
         this.solution = solution;
         this.imgWidth = imgWidth;
+        this.edgeValueScore = -1;
+        this.connectivityScore = -1;
+        this.deviationScore = -1;
     }
 
     public ArrayList<Pixel> getSolution() {
@@ -24,6 +30,18 @@ public class SolutionRepresentation {
 
     public ArrayList<Segment> getSegments() {
         return segments;
+    }
+
+    public double[] getScore(){
+        double [] score = new double[3];
+        if (this.edgeValueScore == -1) {
+            score[0] = this.edgeValueScore;
+            score[1] = this.connectivityScore;
+            score[2] = this.deviationScore;
+        } else {
+            score = Score.calcScore(this.solution);
+        }
+        return score;
     }
 
     public ArrayList<Segment> generateSegments() {
