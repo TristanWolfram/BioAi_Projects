@@ -11,7 +11,7 @@ public class MOOP {
 
         String imgPath = "Project_3/training_imgs/86016/Test image.jpg";
         //imgPath = "Project_3/training_imgs/ForTesting3x3White.jpg";
-        //imgPath = "Project_3/training_imgs/ForTesting10x10White.jpg";
+        imgPath = "Project_3/training_imgs/ForTesting10x10White.jpg";
 
         Image img = InitPop.loadImage(imgPath);
         img.printImage();

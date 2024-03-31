@@ -72,8 +72,8 @@ public abstract class InitPop {
             //search for a neighbour
             boolean search = true;
             //Maximum length of a "snake" of connected pixels
-            int max = 10000;
-            max = Integer.MAX_VALUE;
+            int max = 100;
+            //max = Integer.MAX_VALUE;
             int j = 0;
             //keep track of neighbours
             ArrayList<Pixel> possibleNeighbours = new ArrayList<>();
@@ -81,10 +81,10 @@ public abstract class InitPop {
             Set<Integer> visitedThisLoop = new HashSet<>();
             visitedThisLoop.add(currentPixel.getKey());
             while (search){
-                //filter new neighbours
-                ArrayList<Pixel> newNeighbours = new ArrayList<>(currentPixel.neighbors);
+                //get and filter new neighbours
                 List<Pixel> newNeighbourOptions = currentPixel.neighbors.stream()
                         .filter(Objects::nonNull)
+                        .filter(neighbour -> !possibleNeighbours.contains(neighbour))
                         .filter(neighbour -> !pixelKeysVisited.contains(neighbour.getKey()))
                         .collect(Collectors.toList());
                 //add the new neighbours
@@ -119,6 +119,7 @@ public abstract class InitPop {
                     j++;
                 }
             }
+            System.out.println("aa");
         }
         //actually add the new pixels to the solution
         for (int i = 0; i < height; i++) {
