@@ -2,6 +2,7 @@ package utils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 
 public class SolutionRepresentation {
     private ArrayList<Pixel> solution = new ArrayList<>();
@@ -29,17 +30,20 @@ public class SolutionRepresentation {
     }
 
     public ArrayList<Segment> getSegments() {
-        return segments;
+        if(this.segments.size() == 0){
+            this.segments = this.generateSegments();
+        }
+        return this.segments;
     }
 
     public double[] getScore(){
         double [] score = new double[3];
-        if (this.edgeValueScore == -1) {
+        if (this.edgeValueScore != -1) {
             score[0] = this.edgeValueScore;
             score[1] = this.connectivityScore;
             score[2] = this.deviationScore;
         } else {
-            score = Score.calcScore(this.solution);
+            score = Score.calcScore(getSegments());
         }
         return score;
     }
@@ -48,15 +52,15 @@ public class SolutionRepresentation {
         clearPixelAssignments();
         clearHashMap();
 
-        ArrayList<Segment> segments = new ArrayList<>();
+        HashSet<Segment> segments = new HashSet<>();
 
         ArrayList<Pixel> pixelQueue = new ArrayList<>(solution);
         int iterations = 0;
         while (!pixelQueue.isEmpty()) {
 
             Pixel currentPixel = pixelQueue.get(0);
-
-            ArrayList<Pixel> visited = new ArrayList<>();
+            Pixel neighbourEnd = null;
+            HashSet<Pixel> visited = new HashSet<>();
             visited.add(currentPixel);
 
             boolean createNewSegment = true;
@@ -69,6 +73,7 @@ public class SolutionRepresentation {
                     if (next.assigned == true) {
                         endTraverse = true;
                         createNewSegment = false;
+                        neighbourEnd = next;
                     } else if (visited.contains(next)) {
                         endTraverse = true;
                     } else {
@@ -85,15 +90,13 @@ public class SolutionRepresentation {
                 assignPixelsToSegment(visited, s);
                 segments.add(s);
             } else {
-                Pixel pixelInSegment = visited.get(visited.size() -
-                        1).getConnectedNeighbor();
-                Segment s = findSegment(pixelInSegment);
+                Segment s = findSegment(neighbourEnd);
                 assignPixelsToSegment(visited, s);
                 s.getSegment().addAll(visited);
             }
 
             pixelQueue.removeAll(visited);
-//            System.out.println("Iterations: " + iterations++);
+            // System.out.println("Iterations: " + iterations++);
         }
 
         // for (Pixel p : solution) {
@@ -103,10 +106,10 @@ public class SolutionRepresentation {
         // segments.add(s);
         // }
         // }
-
+        
         System.out.println("Segments: " + segments.size());
 
-        return segments;
+        return new ArrayList<>(segments);
     }
 
     private void depthFirstSearch(Pixel p, Segment s) {
@@ -124,7 +127,7 @@ public class SolutionRepresentation {
         return pixelSegmentMap.get(p);
     }
 
-    private void assignPixelsToSegment(ArrayList<Pixel> pixels, Segment s) {
+    private void assignPixelsToSegment(HashSet<Pixel> pixels, Segment s) {
         for (Pixel p : pixels) {
             pixelSegmentMap.put(p, s);
         }
@@ -136,7 +139,7 @@ public class SolutionRepresentation {
         }
     }
 
-    private void markPixelAsAssigned(ArrayList<Pixel> pixels) {
+    private void markPixelAsAssigned(HashSet<Pixel> pixels) {
         for (Pixel p : pixels) {
             p.assigned = true;
         }

@@ -37,7 +37,7 @@ public class Pixel {
 
     public void setConnection(PossibleConnections connection) {
         this.connection = connection;
-        calculateDistance();
+        calculateDistanceToConnection();
     }
 
     public Pixel getConnectedNeighbor() {
@@ -49,16 +49,20 @@ public class Pixel {
         return neighbors.get(index);
     }
 
-    private void calculateDistance() {
+    private void calculateDistanceToConnection() {
 
         if (connection == PossibleConnections.NONE || getConnectedNeighbor() == null) {
             this.distance = 0;
         } else {
-            RGBRepresentation otherColor = getConnectedNeighbor().getColor();
-            this.distance = Math.sqrt(Math.pow(color.getRed() - otherColor.getRed(), 2)
+            this.distance = getDistanceTo(getConnectedNeighbor().getColor());
+        }
+    }
+
+    public double getDistanceTo(RGBRepresentation otherColor){
+            double distance= Math.sqrt(Math.pow(color.getRed() - otherColor.getRed(), 2)
                     + Math.pow(color.getGreen() - otherColor.getGreen(), 2)
                     + Math.pow(color.getBlue() - otherColor.getBlue(), 2));
-        }
+        return distance;
     }
 
     public double getDistance() {

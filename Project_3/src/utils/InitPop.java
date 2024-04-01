@@ -72,7 +72,7 @@ public abstract class InitPop {
             //search for a neighbour
             boolean search = true;
             //Maximum length of a "snake" of connected pixels
-            int max = 100;
+            int max = 20000;
             //max = Integer.MAX_VALUE;
             int j = 0;
             //keep track of neighbours
@@ -119,7 +119,6 @@ public abstract class InitPop {
                     j++;
                 }
             }
-            System.out.println("aa");
         }
         //actually add the new pixels to the solution
         for (int i = 0; i < height; i++) {

@@ -87,7 +87,7 @@ public class NSGA2 {
     private void runGeneration(){
         //select parents
         ArrayList<SolutionRepresentation> parents;
-        if (useFrontier){
+        if (!useFrontier){
             parents = this.selectTop(this.population, this.amountOfParents);
         } else {
             parents = this.selectBestFrontier(this.population, this.amountOfParents);

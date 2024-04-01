@@ -1,18 +1,19 @@
 package utils;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 public class Segment {
-    private ArrayList<Pixel> segment = new ArrayList<>();
+    private HashSet<Pixel> segment = new HashSet<>();
 
     public Segment() {
     }
 
-    public ArrayList<Pixel> getSegment() {
+    public HashSet<Pixel> getSegment() {
         return segment;
     }
 
-    public void setSegment(ArrayList<Pixel> segment) {
+    public void setSegment(HashSet<Pixel> segment) {
         this.segment = segment;
     }
 
