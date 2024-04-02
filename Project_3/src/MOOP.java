@@ -33,7 +33,7 @@ public class MOOP {
         int amountOfSeconds = 360;
         boolean useTime = false;
         double crossoverRate = 1;
-        double individualMutationRate = 0.2;
+        double individualMutationRate = 0.5;
         double probDistOfDifferentMutationTypes = 0.5;
         int amountOfParents = 4;
         boolean useSmartPopGeneration = true;
@@ -52,14 +52,17 @@ public class MOOP {
         // System.out.println(test.getScore()[0]);
         // System.out.println(test.getScore()[1]);
         // System.out.println(test.getScore()[2]);
-        for (SolutionRepresentation s : GA.getPopulation()) {
-            System.out.println(s);
-        }
-        // System.out.println(GA.getPopulation().get(0));
-        // System.out.println(GA.getPopulation().get(5));
-        // SolutionRepresentation[] children  = GA.individualCrossover(GA.getPopulation().get(1), GA.getPopulation().get(0));
-        // System.out.println(children[0]);
-        // System.out.println(children[1]);
+//        for (SolutionRepresentation s : GA.getPopulation()) {
+//            System.out.println(s);
+//        }
+        System.out.println("parents");
+        System.out.println(GA.getPopulation().get(0));
+        System.out.println(GA.getPopulation().get(1));
+        SolutionRepresentation[] children  = GA.individualCrossover(GA.getPopulation().get(1), GA.getPopulation().get(0));
+        System.out.println("children");
+        System.out.println(children[0]);
+        System.out.println("Mutated Child 0");
+        System.out.println(GA.mutationType1(children[0]));
 
         // System.out.println(GA.getPopulation().get(0).getSolution().get(0).getDistance());
 

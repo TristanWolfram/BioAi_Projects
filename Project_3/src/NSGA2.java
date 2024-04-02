@@ -167,7 +167,7 @@ public class NSGA2 {
         //check if we do crossover
         if (rnd.nextDouble() < this.crossoverRate){
             //todo preform crossover logic with the 2 parents
-            int amountOfCrossoverPoints = rnd.nextInt(20) + 1;
+            int amountOfCrossoverPoints = rnd.nextInt(2) + 1;
             //select the points to do crossover at random
             ArrayList<Integer> crossoverPoints = new ArrayList<>();
             for (int i = 0; i < amountOfCrossoverPoints; i++) {
@@ -237,7 +237,7 @@ public class NSGA2 {
         }
     }
 
-    private SolutionRepresentation mutationType1(SolutionRepresentation child){
+    public SolutionRepresentation mutationType1(SolutionRepresentation child){
         Random rnd = threadSafeRandom.get();
         //todo implement mutation
         for (Pixel pixel : child.getSolution()) {

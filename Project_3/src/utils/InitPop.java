@@ -55,8 +55,7 @@ public abstract class InitPop {
         ArrayList<Pixel> trackedPixelSolution = new ArrayList<>();
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
-                Pixel ps = pixels[i][j];
-                Pixel p = new Pixel(ps.getKey(), ps.getColor(), ps.getNeighbors());
+                Pixel p = pixels[i][j];
                 pixelOptions.add(p);
                 trackedPixelSolution.add(p);
             }
@@ -97,6 +96,7 @@ public abstract class InitPop {
                 }
                 List<Pixel> newNeighbourOptions = neighbours.stream()
                         .filter(Objects::nonNull)
+                        .filter(neighbour -> !possibleNeighbours.contains(neighbour))
                         .filter(neighbour -> !pixelKeysVisited.contains(neighbour.getKey()))
                         .collect(Collectors.toList());
                 //add the new neighbours
@@ -135,9 +135,7 @@ public abstract class InitPop {
         //actually add the new pixels to the solution
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
-                Pixel ps = pixels[i][j];
-                Pixel p = new Pixel(ps.getKey(), ps.getColor(), ps.getNeighbors());
-                p.setConnection(ps.connection);
+                Pixel p = pixels[i][j];
                 solution.add(p);
             }
         }
