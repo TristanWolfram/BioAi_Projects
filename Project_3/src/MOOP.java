@@ -30,7 +30,7 @@ public class MOOP {
         // img.getPixels()[0][0].getNeighbors());
 
         int generations = 5;
-        int populationSize = 10;
+        int populationSize = 1;
         int amountOfSeconds = 360;
         boolean useTime = false;
         double crossoverRate = 1;

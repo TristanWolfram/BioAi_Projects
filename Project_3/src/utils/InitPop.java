@@ -32,7 +32,7 @@ public abstract class InitPop {
             customThreadPool.submit(() -> {
                 IntStream.range(0, populationSize).parallel().forEach(i -> {
                     // Add the individual to the concurrent collection
-                    pop.add(generateSmartIndividual(buffImg, populationLength));
+                    pop.add(generateSmartIndividualGreedy(buffImg, populationLength));
                     System.out.println("created individual");
                 });
             }).get(); // Waiting for all tasks to complete
@@ -45,7 +45,7 @@ public abstract class InitPop {
         return new ArrayList<>(pop);
     }
 
-    private static SolutionRepresentation generateSmartIndividual(BufferedImage buffImg, int populationLength) {
+    private static SolutionRepresentation generateSmartIndividualRandom(BufferedImage buffImg, int populationLength) {
         Image img = loadImage(buffImg);
         Pixel[][] pixels = img.getPixels();
         int width = img.getWidth();
@@ -131,6 +131,112 @@ public abstract class InitPop {
                     currentPixel = neighbour;
                     // increase the size of the "snake/segment"
                     j++;
+                }
+            }
+        }
+        // actually add the new pixels to the solution
+        for (int i = 0; i < height; i++) {
+            for (int j = 0; j < width; j++) {
+                Pixel p = pixels[i][j];
+                solution.add(p);
+            }
+        }
+
+        return new SolutionRepresentation(solution, pixels[0].length);
+
+    }
+
+    private static SolutionRepresentation generateSmartIndividualGreedy(BufferedImage buffImg, int populationLength) {
+        //todo Somehow prevent it from creating alot of very small segments (or finding the right color diff at 222)
+        Image img = loadImage(buffImg);
+        Pixel[][] pixels = img.getPixels();
+        int width = img.getWidth();
+        int height = img.getHight();
+        // track a list of options for pixels
+        HashSet<Pixel> pixelOptions = new HashSet<Pixel>();
+        ArrayList<Pixel> trackedPixelSolution = new ArrayList<>();
+        for (int i = 0; i < height; i++) {
+            for (int j = 0; j < width; j++) {
+                Pixel p = pixels[i][j];
+                pixelOptions.add(p);
+                trackedPixelSolution.add(p);
+            }
+        }
+
+        ArrayList<Pixel> solution = new ArrayList<Pixel>();
+        Set<Integer> pixelKeysVisited = new HashSet<Integer>();
+
+        while (!pixelOptions.isEmpty()) {
+            System.out.println(pixelOptions.size());
+            // thread safe random
+            Random rnd = threadSafeRandom.get();
+            // select a random pixel to start a region
+            List<Pixel> pixelOptionsTemp = new ArrayList<Pixel>(pixelOptions);
+            Pixel currentPixel = pixelOptionsTemp.get(rnd.nextInt(pixelOptions.size()));
+            pixelOptions.remove(currentPixel);
+            // set it to connect to itsself (working backwards)
+            currentPixel.setConnection(PossibleConnections.NONE);
+            // search for a neighbour
+            boolean search = true;
+            // keep track of neighbours
+            ArrayList<Object[]> possibleNeighbours = new ArrayList<>();
+            // keep track of the visited each loop/segment/snake
+            Set<Integer> visitedThisLoop = new HashSet<>();
+            while (search) {
+                // get and filter new neighbours
+                List<Integer> neighbourKeys = currentPixel.getNeighbors();
+                ArrayList<Object[]> neighbours = new ArrayList<Object[]>();
+                for (Integer key : neighbourKeys) {
+                    if (key != null) {
+                        Pixel nb = trackedPixelSolution.get(key);
+                        neighbours.add(new Object[]{nb,currentPixel, nb.getDistanceTo(currentPixel.getColor())});
+                    }
+                }
+                List<Object[]> newNeighbourOptions = neighbours.stream()
+                        // Filter out if the first Pixel is null
+                        .filter(n -> Objects.nonNull(n[0]))
+                        // Ensure the Pixel does not exist in possibleNeighbours
+                        .filter(n -> possibleNeighbours.stream()
+                                .noneMatch(p -> ((Pixel) p[0]).equals(n[0])))
+                        .filter(n -> !pixelKeysVisited.contains(((Pixel) n[0]).getKey()))
+                        .collect(Collectors.toList());
+                // add the new neighbours
+                possibleNeighbours.addAll((newNeighbourOptions));
+                // if no possibilities or "snake" length too long, stop the search and go to the
+                // next random pixel to start a new "snake"
+                if (possibleNeighbours.size() == 0) {
+                    search = false;
+                } else {
+                    // sort the neighbourOptions by [2] value
+                    Collections.sort(possibleNeighbours, new Comparator<Object[]>() {
+                        @Override
+                        public int compare(Object[] o1, Object[] o2) {
+                            Double value1 = (Double) o1[2];
+                            Double value2 = (Double) o2[2];
+                            return value1.compareTo(value2);
+                        }
+                    });
+                    //get the neighbour
+                    Object[] neighbourObject = possibleNeighbours.get(0);
+                    //stop if the best distance is too big
+                    if ((Double) neighbourObject[2] > 100){
+                        search = false;
+                    } else {
+                        Pixel neighbour = (Pixel) neighbourObject[0];
+                        //get the pixel it should be connected to
+                        Pixel toConnectToNeighbour = (Pixel) possibleNeighbours.get(0)[1];
+                        //get the direction number for toConnectToNeighbour
+                        int nr = neighbour.getNeighbors().indexOf(toConnectToNeighbour.getKey());
+                        // connect the neighbour to the current segment
+                        neighbour.setConnection(PossibleConnections.values()[nr]);
+                        // add neighbour to visited
+                        pixelKeysVisited.add(neighbour.getKey());
+                        //remove as an option
+                        possibleNeighbours.remove(neighbourObject);
+                        pixelOptions.remove(neighbour);
+                        // set current to neighbour
+                        currentPixel = neighbour;
+                    }
                 }
             }
         }
