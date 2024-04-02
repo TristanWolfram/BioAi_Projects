@@ -1,3 +1,4 @@
+import java.awt.image.BufferedImage;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ForkJoinPool;
@@ -8,6 +9,7 @@ import utils.*;
 
 public class NSGA2 {
     private final Image img;
+    private final BufferedImage buffImg;
     private final int populationLength; // img_hight * img_width
     private int generations;
     private int amountOfSeconds;
@@ -28,7 +30,7 @@ public class NSGA2 {
     // Define threadSafeRandom as a static field with initial value for each thread
     private static final ThreadLocal<Random> threadSafeRandom = ThreadLocal.withInitial(() -> new Random(ThreadLocalRandom.current().nextInt()));
 
-    public NSGA2(Image img, String imgPath, int generations, int populationSize, int amountOfSeconds, boolean useTime, double crossoverRate, double individualMutationRate, double probDistOfDifferentMutationTypes,
+    public NSGA2(Image img, BufferedImage bufferedImage, int generations, int populationSize, int amountOfSeconds, boolean useTime, double crossoverRate, double individualMutationRate, double probDistOfDifferentMutationTypes,
                  int amountOfParents, boolean useSmartPopGeneration, boolean useFrontier, double edgeScoreMulti, double connectivityScoreMulti, double deviationScoreMulti) {
         this.img = img;
         this.populationLength = img.getHight() * img.getWidth();
@@ -51,13 +53,13 @@ public class NSGA2 {
         this.edgeScoreMulti = edgeScoreMulti;
         this.connectivityScoreMulti = connectivityScoreMulti;
         this.deviationScoreMulti = deviationScoreMulti;
-
+        this.buffImg = bufferedImage;
 
         //init pop
         if (this.useSmartPopGeneration){
-            population = InitPop.generateSmartPopulation(populationSize, img, populationLength);
+            population = InitPop.generateSmartPopulation(populationSize, buffImg, populationLength);
         } else {
-            population = InitPop.generatePopulation(populationSize, img);
+            population = InitPop.generatePopulation(populationSize, buffImg);
         }
 
         System.out.println("Initialized the genetic algortihm with:\n" + "Generations: " + generations

@@ -52,7 +52,7 @@ public class Image {
 
         for (int y = 0; y < hight; y++) {
             for (int x = 0; x < width; x++) {
-                ArrayList<Pixel> neighbors = new ArrayList<>();
+                ArrayList<Integer> neighbors = new ArrayList<>();
 
                 for (int[] position : neighborPositions) {
                     int neighborY = y + position[0];
@@ -60,7 +60,7 @@ public class Image {
 
                     if (neighborX >= 0 && neighborX < width && neighborY >= 0 && neighborY < hight) {
                         Pixel neighbor = pixels[neighborY][neighborX];
-                        neighbors.add(neighbor);
+                        neighbors.add(neighbor.getKey());
                     } else {
                         neighbors.add(null);
                     }

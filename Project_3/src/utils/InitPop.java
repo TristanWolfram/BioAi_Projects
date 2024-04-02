@@ -19,7 +19,7 @@ public abstract class InitPop {
 
 
     //Create the individuals in parallel for speed
-    public static ArrayList<SolutionRepresentation> generateSmartPopulation(int populationSize, Image img, int populationLength) {
+    public static ArrayList<SolutionRepresentation> generateSmartPopulation(int populationSize, BufferedImage buffImg, int populationLength) {
 
         // Concurrent collection to store individuals
         ConcurrentLinkedQueue<SolutionRepresentation> pop = new ConcurrentLinkedQueue<>();
@@ -30,9 +30,9 @@ public abstract class InitPop {
             customThreadPool.submit(() -> {
                IntStream.range(0, populationSize).parallel().forEach(i -> {
                    //dont pass the image directly but create a new list of pixels each time instead, this prevents threading issues
-                    Pixel[][] pixels = img.getPixels();
+                    // Pixel[][] pixels = img.getPixels();
                     //Add the individual to the concurrent collection
-                    pop.add(generateSmartIndividual(pixels, populationLength));
+                    pop.add(generateSmartIndividual(buffImg, populationLength));
                     System.out.println("created individual");
                 });
             }).get(); // Waiting for all tasks to complete
@@ -45,17 +45,23 @@ public abstract class InitPop {
         return new ArrayList<>(pop);
     }
 
-    private static SolutionRepresentation generateSmartIndividual(Pixel[][] pixels, int populationLength){
+    private static SolutionRepresentation generateSmartIndividual(BufferedImage buffImg, int populationLength){
+        Image img = loadImage(buffImg);
+        Pixel[][] pixels = img.getPixels();
         int width = pixels[0].length;
         int height = pixels.length;
         //track a list of options for pixels
         HashSet<Pixel> pixelOptions = new HashSet<Pixel>();
+        ArrayList<Pixel> trackedPixelSolution = new ArrayList<>();
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
-                Pixel p = pixels[i][j];
+                Pixel ps = pixels[i][j];
+                Pixel p = new Pixel(ps.getKey(), ps.getColor(), ps.getNeighbors());
                 pixelOptions.add(p);
+                trackedPixelSolution.add(p);
             }
         }
+        
         ArrayList<Pixel> solution = new ArrayList<Pixel>();
         Set<Integer> pixelKeysVisited = new HashSet<Integer>();
 
@@ -72,7 +78,7 @@ public abstract class InitPop {
             //search for a neighbour
             boolean search = true;
             //Maximum length of a "snake" of connected pixels
-            int max = 20000;
+            int max = 10;
             //max = Integer.MAX_VALUE;
             int j = 0;
             //keep track of neighbours
@@ -82,9 +88,15 @@ public abstract class InitPop {
             visitedThisLoop.add(currentPixel.getKey());
             while (search){
                 //get and filter new neighbours
-                List<Pixel> newNeighbourOptions = currentPixel.neighbors.stream()
+                List<Integer> neighbourKeys = currentPixel.getNeighbors();
+                List<Pixel> neighbours = new ArrayList<Pixel>();
+                for (Integer key : neighbourKeys) {
+                    if (key != null){
+                        neighbours.add(trackedPixelSolution.get(key));
+                    }
+                }
+                List<Pixel> newNeighbourOptions = neighbours.stream()
                         .filter(Objects::nonNull)
-                        .filter(neighbour -> !possibleNeighbours.contains(neighbour))
                         .filter(neighbour -> !pixelKeysVisited.contains(neighbour.getKey()))
                         .collect(Collectors.toList());
                 //add the new neighbours
@@ -99,7 +111,7 @@ public abstract class InitPop {
                     int nr = -1;
                     for(int z = 0; z < neighbour.neighbors.size(); z++){
                         if(neighbour.neighbors.get(z) != null){
-                            if(visitedThisLoop.contains(neighbour.neighbors.get(z).getKey())){
+                            if(visitedThisLoop.contains(neighbour.neighbors.get(z))){
                                 nr = z;
                                 break;
                             }
@@ -123,7 +135,9 @@ public abstract class InitPop {
         //actually add the new pixels to the solution
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
-                Pixel p = pixels[i][j];
+                Pixel ps = pixels[i][j];
+                Pixel p = new Pixel(ps.getKey(), ps.getColor(), ps.getNeighbors());
+                p.setConnection(ps.connection);
                 solution.add(p);
             }
         }
@@ -132,7 +146,7 @@ public abstract class InitPop {
 
     }
 
-    public static ArrayList<SolutionRepresentation> generatePopulation(int populationSize, Image img) {
+    public static ArrayList<SolutionRepresentation> generatePopulation(int populationSize, BufferedImage img) {
         //could change to threading aswell
         ArrayList<SolutionRepresentation> population = new ArrayList<SolutionRepresentation>();
 
@@ -143,19 +157,20 @@ public abstract class InitPop {
         return population;
     }
 
-    private static SolutionRepresentation generateSolutionRand(Image img) {
+    private static SolutionRepresentation generateSolutionRand(BufferedImage buffImg) {
 
         ArrayList<Pixel> solution = new ArrayList<Pixel>();
-
+        Image img = loadImage(buffImg);
         // flatten img
         Pixel[][] pixels = img.getPixels();
         for (int i = 0; i < img.getHight(); i++) {
             for (int j = 0; j < img.getWidth(); j++) {
-                Pixel p = pixels[i][j];
+                Pixel ps = pixels[i][j];
+                Pixel p = new Pixel(ps.getKey(), ps.getColor(), ps.getNeighbors());
                 // set connection of the pixel to a random one
                 p.setConnection(
                         PossibleConnections.values()[(int) (Math.random() *
-                                4)]);
+                                9)]);
                 // p.setConnection(PossibleConnections.RIGHT);
                 solution.add(p);
             }
@@ -164,43 +179,35 @@ public abstract class InitPop {
         return new SolutionRepresentation(solution, img.getWidth());
     }
 
-    public static Image loadImage(String path) {
+    public static Image loadImage(BufferedImage imgBuf) {
 
-        try {
-            BufferedImage imgBuf = ImageIO.read(new File(path));
-            // imgBuf = ImageIO.read(new File("test.png"));
-            //System.out.println("Found image with width: " + imgBuf.getWidth() + " and height: " + imgBuf.getHeight());
-            Image img = new Image(imgBuf.getHeight(), imgBuf.getWidth());
+        // imgBuf = ImageIO.read(new File("test.png"));
+        //System.out.println("Found image with width: " + imgBuf.getWidth() + " and height: " + imgBuf.getHeight());
+        Image img = new Image(imgBuf.getHeight(), imgBuf.getWidth());
 
-            int pixelID = 0;
-            int hight = imgBuf.getHeight();
-            int width = imgBuf.getWidth();
+        int pixelID = 0;
+        int hight = imgBuf.getHeight();
+        int width = imgBuf.getWidth();
 
-            for (int y = 0; y < hight; y++) {
-                for (int x = 0; x < width; x++) {
-                    // Get the RGB value of the pixel
-                    int rgbValue = imgBuf.getRGB(x, y);
-                    int red = (rgbValue >> 16) & 0xff;
-                    int green = (rgbValue >> 8) & 0xff;
-                    int blue = (rgbValue) & 0xff;
-                    RGBRepresentation color = new RGBRepresentation(red, green, blue);
+        for (int y = 0; y < hight; y++) {
+            for (int x = 0; x < width; x++) {
+                // Get the RGB value of the pixel
+                int rgbValue = imgBuf.getRGB(x, y);
+                int red = (rgbValue >> 16) & 0xff;
+                int green = (rgbValue >> 8) & 0xff;
+                int blue = (rgbValue) & 0xff;
+                RGBRepresentation color = new RGBRepresentation(red, green, blue);
 
-                    Pixel p = new Pixel(pixelID, color);
-                    img.setPixel(y, x, p);
-                    pixelID++;
-                }
+                Pixel p = new Pixel(pixelID, color);
+                img.setPixel(y, x, p);
+                pixelID++;
             }
-
-            img.generateNeighbors();
-
-            //System.out.println("Image loaded successfully");
-            return img;
-        } catch (Exception e) {
-            System.out.println("Error: " + e);
         }
 
-        System.out.println("Error: Could not load image");
-        return null;
+        img.generateNeighbors();
+
+        //System.out.println("Image loaded successfully");
+        return img;
     }
 
 }

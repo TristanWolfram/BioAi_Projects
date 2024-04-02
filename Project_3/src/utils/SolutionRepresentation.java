@@ -47,7 +47,7 @@ public class SolutionRepresentation {
             score[1] = this.connectivityScore;
             score[2] = this.deviationScore;
         } else {
-            score = Score.calcScore(getSegments());
+            score = Score.calcScore(getSegments(), this);
         }
         return score;
     }
@@ -70,7 +70,8 @@ public class SolutionRepresentation {
             boolean createNewSegment = true;
             boolean endTraverse = false;
             while (endTraverse == false) {
-                Pixel next = currentPixel.getConnectedNeighbor();
+                int nextKey = currentPixel.getConnectedNeighbor();
+                Pixel next = solution.get(nextKey);
                 if (next == null) {
                     endTraverse = true;
                 } else {
@@ -121,7 +122,8 @@ public class SolutionRepresentation {
         s.addPixel(p);
         pixelSegmentMap.put(p, s);
 
-        Pixel next = p.getConnectedNeighbor();
+        int nextKey = p.getConnectedNeighbor();
+        Pixel next = solution.get(nextKey);
         if (next != null && !next.assigned) {
             depthFirstSearch(next, s);
         }

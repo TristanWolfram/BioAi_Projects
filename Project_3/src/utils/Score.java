@@ -5,22 +5,24 @@ import java.util.HashSet;
 
 public abstract class Score {
 
-    public static double[] calcScore(ArrayList<Segment> solution){
+    public static double[] calcScore(ArrayList<Segment> segments, SolutionRepresentation solution){
         double [] score = new double[3];
-        for (Segment segment : solution) {
-            score[0] += edgeScore(segment);
-            score[1] += connectivityScore(segment);
+        for (Segment segment : segments) {
+            score[0] += edgeScore(segment, solution);
+            score[1] += connectivityScore(segment, solution);
             score[2] += deviationScore(segment);
         }
         return score;
     }
 
-    private static double edgeScore(Segment segment){
+    private static double edgeScore(Segment segment, SolutionRepresentation solution){
         double edgeScore = 0;
         //todo implement this scoring formula from assignment description
         for (Pixel pixel : segment.getSegment()) {
-            ArrayList<Pixel> neighbours = pixel.getNeighbors();
-            for (Pixel neighbour : neighbours) {
+            ArrayList<Integer> neighbourKeys = pixel.getNeighbors();
+            
+            for (Integer key : neighbourKeys) {
+                Pixel neighbour = solution.getSolution().get(key);
                 if (neighbour != null && !segment.contains(neighbour)) {
                     edgeScore += pixel.getDistanceTo(neighbour.getColor());
                 }
@@ -29,12 +31,14 @@ public abstract class Score {
         return edgeScore;
     }
 
-    private static double connectivityScore(Segment segment){
+    private static double connectivityScore(Segment segment, SolutionRepresentation solution){
         double connectivityScore = 0;
         //todo implement this scoring formula from assignment description
         for (Pixel pixel : segment.getSegment()) {
-            ArrayList<Pixel> neighbours = pixel.getNeighbors();
-            for (Pixel neighbour : neighbours) {
+            ArrayList<Integer> neighbourKeys = pixel.getNeighbors();
+            
+            for (Integer key : neighbourKeys) {
+                Pixel neighbour = solution.getSolution().get(key);
                 if(neighbour != null && !segment.contains(neighbour)){
                     connectivityScore += 0.125;
                 }

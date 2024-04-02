@@ -6,17 +6,22 @@ public class Pixel {
     private final int key;
 
     public PossibleConnections connection;
-    public ArrayList<Pixel> neighbors;
+    public ArrayList<Integer> neighbors;
     public boolean assigned = false;
 
     private RGBRepresentation color;
-    private double distance;
 
     public Pixel(int key, RGBRepresentation color) {
         this.key = key;
         this.color = color;
         this.connection = PossibleConnections.NONE;
-        this.distance = 0;
+    }
+
+    public Pixel(int key, RGBRepresentation color, ArrayList<Integer> neighbours) {
+        this.key = key;
+        this.color = color;
+        this.connection = PossibleConnections.NONE;
+        this.neighbors = neighbours;
     }
 
     public int getKey() {
@@ -31,31 +36,21 @@ public class Pixel {
         this.color = color;
     }
 
-    public ArrayList<Pixel> getNeighbors() {
+    public ArrayList<Integer> getNeighbors() {
         return neighbors;
     }
 
     public void setConnection(PossibleConnections connection) {
         this.connection = connection;
-        calculateDistanceToConnection();
     }
 
-    public Pixel getConnectedNeighbor() {
+    public Integer getConnectedNeighbor() {
         // get the index of the current connection
         if (connection == PossibleConnections.NONE) {
             return null;
         }
         int index = connection.ordinal();
         return neighbors.get(index);
-    }
-
-    private void calculateDistanceToConnection() {
-
-        if (connection == PossibleConnections.NONE || getConnectedNeighbor() == null) {
-            this.distance = 0;
-        } else {
-            this.distance = getDistanceTo(getConnectedNeighbor().getColor());
-        }
     }
 
     public double getDistanceTo(RGBRepresentation otherColor){
@@ -65,9 +60,6 @@ public class Pixel {
         return distance;
     }
 
-    public double getDistance() {
-        return distance;
-    }
 
     public String toString() {
         if (key < 10){
@@ -79,21 +71,21 @@ public class Pixel {
     private String getConnectionString() {
         switch (connection) {
             case RIGHT:
-                return "→";
+                return "1";
             case LEFT:
-                return "←";
+                return "2";
             case UP:
-                return "↑";
+                return "3";
             case DOWN:
-                return "↓";
+                return "4";
             case UP_RIGHT:
-                return "↗";
+                return "5";
             case DOWN_RIGHT:
-                return "↘";
+                return "6";
             case UP_LEFT:
-                return "↖";
+                return "7";
             case DOWN_LEFT:
-                return "↙";
+                return "8";
             default:
                 return "*";
         }
