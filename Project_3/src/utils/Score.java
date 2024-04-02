@@ -22,9 +22,11 @@ public abstract class Score {
             ArrayList<Integer> neighbourKeys = pixel.getNeighbors();
             
             for (Integer key : neighbourKeys) {
-                Pixel neighbour = solution.getSolution().get(key);
-                if (neighbour != null && !segment.contains(neighbour)) {
-                    edgeScore += pixel.getDistanceTo(neighbour.getColor());
+                if (key != null){
+                    Pixel neighbour = solution.getSolution().get(key);
+                    if (neighbour != null && !segment.contains(neighbour)) {
+                        edgeScore += pixel.getDistanceTo(neighbour.getColor());
+                    }
                 }
             }
         }
@@ -38,9 +40,11 @@ public abstract class Score {
             ArrayList<Integer> neighbourKeys = pixel.getNeighbors();
             
             for (Integer key : neighbourKeys) {
-                Pixel neighbour = solution.getSolution().get(key);
-                if(neighbour != null && !segment.contains(neighbour)){
-                    connectivityScore += 0.125;
+                if (key != null) {
+                    Pixel neighbour = solution.getSolution().get(key);
+                    if (neighbour != null && !segment.contains(neighbour)) {
+                        connectivityScore += 0.125;
+                    }
                 }
             }
         }

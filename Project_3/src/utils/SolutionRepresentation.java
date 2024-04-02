@@ -71,10 +71,10 @@ public class SolutionRepresentation {
             boolean endTraverse = false;
             while (endTraverse == false) {
                 int nextKey = currentPixel.getConnectedNeighbor();
-                Pixel next = solution.get(nextKey);
-                if (next == null) {
+                if (nextKey == -1) {
                     endTraverse = true;
                 } else {
+                    Pixel next = solution.get(nextKey);
                     if (next.assigned == true) {
                         endTraverse = true;
                         createNewSegment = false;

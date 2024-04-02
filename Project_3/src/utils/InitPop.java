@@ -29,8 +29,6 @@ public abstract class InitPop {
         try {
             customThreadPool.submit(() -> {
                IntStream.range(0, populationSize).parallel().forEach(i -> {
-                   //dont pass the image directly but create a new list of pixels each time instead, this prevents threading issues
-                    // Pixel[][] pixels = img.getPixels();
                     //Add the individual to the concurrent collection
                     pop.add(generateSmartIndividual(buffImg, populationLength));
                     System.out.println("created individual");
@@ -77,7 +75,7 @@ public abstract class InitPop {
             //search for a neighbour
             boolean search = true;
             //Maximum length of a "snake" of connected pixels
-            int max = 10;
+            int max = 15000;
             //max = Integer.MAX_VALUE;
             int j = 0;
             //keep track of neighbours

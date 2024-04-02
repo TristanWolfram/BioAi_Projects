@@ -47,7 +47,7 @@ public class Pixel {
     public Integer getConnectedNeighbor() {
         // get the index of the current connection
         if (connection == PossibleConnections.NONE) {
-            return null;
+            return -1;
         }
         int index = connection.ordinal();
         return neighbors.get(index);

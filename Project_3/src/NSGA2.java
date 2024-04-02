@@ -62,6 +62,8 @@ public class NSGA2 {
             population = InitPop.generatePopulation(populationSize, buffImg);
         }
 
+        //todo function to calc initial scores but threaded so its faster
+
         System.out.println("Initialized the genetic algortihm with:\n" + "Generations: " + generations
                 + "\nPopulation size: " + populationSize + "\nInput image: " + img.getHight() + "x" + img.getWidth()
                 + "\n");
@@ -106,6 +108,11 @@ public class NSGA2 {
         } else {
             this.population = this.selectBestFrontier(this.population, this.populationSize);
         }
+
+
+        double[] scores1 = this.population.get(0).getScore();
+        double combinedScore1 = edgeScoreMulti * scores1[0] + connectivityScoreMulti * scores1[1] + deviationScoreMulti * scores1[2];
+        System.out.println(combinedScore1);
     }
 
     private ArrayList<SolutionRepresentation> selectTop(ArrayList<SolutionRepresentation> pop, int amount){
