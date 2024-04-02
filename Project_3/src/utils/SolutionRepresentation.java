@@ -21,7 +21,7 @@ public class SolutionRepresentation {
         this.deviationScore = -1;
     }
 
-    public int getImageWidth(){
+    public int getImageWidth() {
         return this.imgWidth;
     }
 
@@ -34,14 +34,14 @@ public class SolutionRepresentation {
     }
 
     public ArrayList<Segment> getSegments() {
-        if(this.segments.size() == 0){
+        if (this.segments.size() == 0) {
             this.segments = this.generateSegments();
         }
         return this.segments;
     }
 
-    public double[] getScore(){
-        double [] score = new double[3];
+    public double[] getScore() {
+        double[] score = new double[3];
         if (this.edgeValueScore != -1) {
             score[0] = this.edgeValueScore;
             score[1] = this.connectivityScore;
@@ -111,7 +111,7 @@ public class SolutionRepresentation {
         // segments.add(s);
         // }
         // }
-        
+
         System.out.println("Segments: " + segments.size());
 
         return new ArrayList<>(segments);

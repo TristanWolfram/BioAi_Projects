@@ -28,10 +28,14 @@ public class NSGA2 {
     private double deviationScoreMulti;
 
     // Define threadSafeRandom as a static field with initial value for each thread
-    private static final ThreadLocal<Random> threadSafeRandom = ThreadLocal.withInitial(() -> new Random(ThreadLocalRandom.current().nextInt()));
+    private static final ThreadLocal<Random> threadSafeRandom = ThreadLocal
+            .withInitial(() -> new Random(ThreadLocalRandom.current().nextInt()));
 
-    public NSGA2(Image img, BufferedImage bufferedImage, int generations, int populationSize, int amountOfSeconds, boolean useTime, double crossoverRate, double individualMutationRate, double probDistOfDifferentMutationTypes,
-                 int amountOfParents, boolean useSmartPopGeneration, boolean useFrontier, double edgeScoreMulti, double connectivityScoreMulti, double deviationScoreMulti) {
+    public NSGA2(Image img, BufferedImage bufferedImage, int generations, int populationSize, int amountOfSeconds,
+            boolean useTime, double crossoverRate, double individualMutationRate,
+            double probDistOfDifferentMutationTypes,
+            int amountOfParents, boolean useSmartPopGeneration, boolean useFrontier, double edgeScoreMulti,
+            double connectivityScoreMulti, double deviationScoreMulti) {
         this.img = img;
         this.populationLength = img.getHight() * img.getWidth();
         this.generations = generations;
@@ -55,14 +59,14 @@ public class NSGA2 {
         this.deviationScoreMulti = deviationScoreMulti;
         this.buffImg = bufferedImage;
 
-        //init pop
-        if (this.useSmartPopGeneration){
+        // init pop
+        if (this.useSmartPopGeneration) {
             population = InitPop.generateSmartPopulation(populationSize, buffImg, populationLength);
         } else {
             population = InitPop.generatePopulation(populationSize, buffImg);
         }
 
-        //todo function to calc initial scores but threaded so its faster
+        // todo function to calc initial scores but threaded so its faster
 
         System.out.println("Initialized the genetic algortihm with:\n" + "Generations: " + generations
                 + "\nPopulation size: " + populationSize + "\nInput image: " + img.getHight() + "x" + img.getWidth()
@@ -74,56 +78,58 @@ public class NSGA2 {
     }
 
     public void run() {
-        //run time based or amount of generations
-        if(useTime){
+        // run time based or amount of generations
+        if (useTime) {
             long startTime = System.currentTimeMillis();
-            while ((System.currentTimeMillis() - startTime) < this.amountOfSeconds * 1000){
+            while ((System.currentTimeMillis() - startTime) < this.amountOfSeconds * 1000) {
                 runGeneration();
             }
         } else {
-            for (int i = 0; i <= this.generations; i++){
+            for (int i = 0; i <= this.generations; i++) {
                 runGeneration();
             }
         }
         System.out.println("Running the genetic algorithm");
     }
 
-    private void runGeneration(){
-        //select parents
+    private void runGeneration() {
+        // select parents
         ArrayList<SolutionRepresentation> parents;
-        if (!useFrontier){
+        if (!useFrontier) {
             parents = this.selectTop(this.population, this.amountOfParents);
         } else {
             parents = this.selectBestFrontier(this.population, this.amountOfParents);
         }
-        //preform crossover
+        // preform crossover
         HashSet<SolutionRepresentation> children = this.crossOver(new HashSet<>(parents));
-        //preform mutation
+        // preform mutation
         HashSet<SolutionRepresentation> mutatedChildren = this.mutate(new HashSet<>(children));
-        //add new children to pop
+        // add new children to pop
         this.population.addAll(mutatedChildren);
-        //select survivors
-        if (useFrontier){
+        // select survivors
+        if (useFrontier) {
             this.population = this.selectTop(this.population, this.populationSize);
         } else {
             this.population = this.selectBestFrontier(this.population, this.populationSize);
         }
 
-
         double[] scores1 = this.population.get(0).getScore();
-        double combinedScore1 = edgeScoreMulti * scores1[0] + connectivityScoreMulti * scores1[1] + deviationScoreMulti * scores1[2];
+        double combinedScore1 = edgeScoreMulti * scores1[0] + connectivityScoreMulti * scores1[1]
+                + deviationScoreMulti * scores1[2];
         System.out.println(combinedScore1);
     }
 
-    private ArrayList<SolutionRepresentation> selectTop(ArrayList<SolutionRepresentation> pop, int amount){
+    private ArrayList<SolutionRepresentation> selectTop(ArrayList<SolutionRepresentation> pop, int amount) {
         Collections.sort(pop, new Comparator<SolutionRepresentation>() {
             @Override
             public int compare(SolutionRepresentation o1, SolutionRepresentation o2) {
                 double[] scores1 = o1.getScore();
-                double combinedScore1 = edgeScoreMulti * scores1[0] + connectivityScoreMulti * scores1[1] + deviationScoreMulti * scores1[2];
+                double combinedScore1 = edgeScoreMulti * scores1[0] + connectivityScoreMulti * scores1[1]
+                        + deviationScoreMulti * scores1[2];
 
                 double[] scores2 = o2.getScore();
-                double combinedScore2 = edgeScoreMulti * scores2[0] + connectivityScoreMulti * scores2[1] + deviationScoreMulti * scores2[2];
+                double combinedScore2 = edgeScoreMulti * scores2[0] + connectivityScoreMulti * scores2[1]
+                        + deviationScoreMulti * scores2[2];
 
                 return Double.compare(combinedScore2, combinedScore1); // Descending order -> highest score on top
             }
@@ -131,13 +137,13 @@ public class NSGA2 {
         return new ArrayList<>(pop.subList(0, amount));
     }
 
-    private ArrayList<SolutionRepresentation> selectBestFrontier(ArrayList<SolutionRepresentation> pop, int amount){
-        //todo fancy stuff with pareto optimal frontier etc.
-        //slide 49-61 (50 for overview) of BioAI_2024_Week_12_v2.pdf
+    private ArrayList<SolutionRepresentation> selectBestFrontier(ArrayList<SolutionRepresentation> pop, int amount) {
+        // todo fancy stuff with pareto optimal frontier etc.
+        // slide 49-61 (50 for overview) of BioAI_2024_Week_12_v2.pdf
         return new ArrayList<>(pop);
     }
 
-    private HashSet<SolutionRepresentation> crossOver(HashSet<SolutionRepresentation> parents){
+    private HashSet<SolutionRepresentation> crossOver(HashSet<SolutionRepresentation> parents) {
         // Concurrent collection to store individuals
         ConcurrentLinkedQueue<SolutionRepresentation> children = new ConcurrentLinkedQueue<>();
         // Custom ForkJoinPool to control the parallelism level
@@ -145,20 +151,18 @@ public class NSGA2 {
         // Copy a list of parents for access
         ArrayList<SolutionRepresentation> parentList = new ArrayList<>(parents);
         try {
-            customThreadPool.submit(() ->
-                    parents.parallelStream().forEach(parent -> {
-                        // select other parent
-                        Random rnd = threadSafeRandom.get();
-                        SolutionRepresentation parent2;
-                        do {
-                            parent2 = parentList.get(rnd.nextInt(parentList.size()));
-                        } while (parent == parent2);//ensure the parents are different
-                        //preform crossover with these parents
-                        SolutionRepresentation[] newChildren = individualCrossover(parent, parent2);
-                        children.add(newChildren[0]);
-                        children.add(newChildren[1]);
-                    })
-            ).get(); // Wait for all tasks to complete
+            customThreadPool.submit(() -> parents.parallelStream().forEach(parent -> {
+                // select other parent
+                Random rnd = threadSafeRandom.get();
+                SolutionRepresentation parent2;
+                do {
+                    parent2 = parentList.get(rnd.nextInt(parentList.size()));
+                } while (parent == parent2);// ensure the parents are different
+                // preform crossover with these parents
+                SolutionRepresentation[] newChildren = individualCrossover(parent, parent2);
+                children.add(newChildren[0]);
+                children.add(newChildren[1]);
+            })).get(); // Wait for all tasks to complete
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -167,30 +171,33 @@ public class NSGA2 {
         return new HashSet<>(children);
     }
 
-    public SolutionRepresentation[] individualCrossover(SolutionRepresentation parent1, SolutionRepresentation parent2){
-        //result
+    public SolutionRepresentation[] individualCrossover(SolutionRepresentation parent1,
+            SolutionRepresentation parent2) {
+        // result
         SolutionRepresentation[] children = new SolutionRepresentation[2];
         Random rnd = threadSafeRandom.get();
-        //check if we do crossover
-        if (rnd.nextDouble() < this.crossoverRate){
-            //todo preform crossover logic with the 2 parents
+        // check if we do crossover
+        if (rnd.nextDouble() < this.crossoverRate) {
+            // todo preform crossover logic with the 2 parents
             int amountOfCrossoverPoints = rnd.nextInt(2) + 1;
-            //select the points to do crossover at random
+            // select the points to do crossover at random
             ArrayList<Integer> crossoverPoints = new ArrayList<>();
             for (int i = 0; i < amountOfCrossoverPoints; i++) {
                 int newPoint;
                 do {
                     newPoint = rnd.nextInt(parent1.getSolution().size());
-                } while (crossoverPoints.contains(newPoint));//dont select the same point twice
+                } while (crossoverPoints.contains(newPoint));// dont select the same point twice
                 crossoverPoints.add(newPoint);
             }
-            SolutionRepresentation child1 = new SolutionRepresentation(new ArrayList<Pixel>(parent1.getSolution()), parent1.getImageWidth());
-            SolutionRepresentation child2 = new SolutionRepresentation(new ArrayList<Pixel>(parent2.getSolution()), parent2.getImageWidth());
-            //start cutting
+            SolutionRepresentation child1 = new SolutionRepresentation(new ArrayList<Pixel>(parent1.getSolution()),
+                    parent1.getImageWidth());
+            SolutionRepresentation child2 = new SolutionRepresentation(new ArrayList<Pixel>(parent2.getSolution()),
+                    parent2.getImageWidth());
+            // start cutting
             Collections.sort(crossoverPoints);
             int prevPoint = -1;
             for (Integer point : crossoverPoints) {
-                if (prevPoint == -1){
+                if (prevPoint == -1) {
                     prevPoint = point;
                 } else {
                     List<Pixel> partP1 = parent1.getSolution().subList(prevPoint, point);
@@ -215,18 +222,15 @@ public class NSGA2 {
         return children;
     }
 
-
     private HashSet<SolutionRepresentation> mutate(HashSet<SolutionRepresentation> children) {
         // Concurrent collection to store individuals
         ConcurrentLinkedQueue<SolutionRepresentation> mutatedChildren = new ConcurrentLinkedQueue<>();
         // Custom ForkJoinPool to control the parallelism level
         ForkJoinPool customThreadPool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
         try {
-            customThreadPool.submit(() ->
-                    children.parallelStream().forEach(child -> {
-                        mutatedChildren.add(individualMutate(child));
-                    })
-            ).get(); // Wait for all tasks to complete
+            customThreadPool.submit(() -> children.parallelStream().forEach(child -> {
+                mutatedChildren.add(individualMutate(child));
+            })).get(); // Wait for all tasks to complete
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -237,18 +241,18 @@ public class NSGA2 {
 
     private SolutionRepresentation individualMutate(SolutionRepresentation child) {
         Random rnd = threadSafeRandom.get();
-        if (rnd.nextDouble() < this.probDistOfDifferentMutationTypes){
+        if (rnd.nextDouble() < this.probDistOfDifferentMutationTypes) {
             return mutationType1(child);
         } else {
             return mutationType2(child);
         }
     }
 
-    public SolutionRepresentation mutationType1(SolutionRepresentation child){
+    public SolutionRepresentation mutationType1(SolutionRepresentation child) {
         Random rnd = threadSafeRandom.get();
-        //todo implement mutation
+        // todo implement mutation
         for (Pixel pixel : child.getSolution()) {
-            if (rnd.nextDouble() < this.individualMutationRate){
+            if (rnd.nextDouble() < this.individualMutationRate) {
                 int newDir = rnd.nextInt(9);
                 pixel.setConnection(PossibleConnections.values()[newDir]);
             }
@@ -256,9 +260,9 @@ public class NSGA2 {
         return child;
     }
 
-    private SolutionRepresentation mutationType2(SolutionRepresentation child){
-        //todo implement other mutation
-        //other mutation ideas??
+    private SolutionRepresentation mutationType2(SolutionRepresentation child) {
+        // todo implement other mutation
+        // other mutation ideas??
         return child;
     }
 
