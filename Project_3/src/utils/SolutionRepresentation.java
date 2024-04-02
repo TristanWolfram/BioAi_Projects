@@ -21,6 +21,10 @@ public class SolutionRepresentation {
         this.deviationScore = -1;
     }
 
+    public int getImageWidth(){
+        return this.imgWidth;
+    }
+
     public ArrayList<Pixel> getSolution() {
         return solution;
     }

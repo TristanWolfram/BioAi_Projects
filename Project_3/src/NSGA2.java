@@ -158,13 +158,47 @@ public class NSGA2 {
         return new HashSet<>(children);
     }
 
-    private SolutionRepresentation[] individualCrossover(SolutionRepresentation parent1, SolutionRepresentation parent2){
+    public SolutionRepresentation[] individualCrossover(SolutionRepresentation parent1, SolutionRepresentation parent2){
         //result
         SolutionRepresentation[] children = new SolutionRepresentation[2];
         Random rnd = threadSafeRandom.get();
         //check if we do crossover
         if (rnd.nextDouble() < this.crossoverRate){
             //todo preform crossover logic with the 2 parents
+            int amountOfCrossoverPoints = rnd.nextInt(20) + 1;
+            //select the points to do crossover at random
+            ArrayList<Integer> crossoverPoints = new ArrayList<>();
+            for (int i = 0; i < amountOfCrossoverPoints; i++) {
+                int newPoint;
+                do {
+                    newPoint = rnd.nextInt(parent1.getSolution().size());
+                } while (crossoverPoints.contains(newPoint));//dont select the same point twice
+                crossoverPoints.add(newPoint);
+            }
+            SolutionRepresentation child1 = new SolutionRepresentation(new ArrayList<Pixel>(parent1.getSolution()), parent1.getImageWidth());
+            SolutionRepresentation child2 = new SolutionRepresentation(new ArrayList<Pixel>(parent2.getSolution()), parent2.getImageWidth());
+            //start cutting
+            Collections.sort(crossoverPoints);
+            int prevPoint = -1;
+            for (Integer point : crossoverPoints) {
+                if (prevPoint == -1){
+                    prevPoint = point;
+                } else {
+                    List<Pixel> partP1 = parent1.getSolution().subList(prevPoint, point);
+                    List<Pixel> partP2 = parent2.getSolution().subList(prevPoint, point);
+
+                    child1.getSolution().removeAll(partP1);
+                    child1.getSolution().addAll(prevPoint, partP2);
+
+                    child2.getSolution().removeAll(partP2);
+                    child2.getSolution().addAll(prevPoint, partP1);
+
+                    prevPoint = point;
+                }
+            }
+            children[0] = child1;
+            children[1] = child2;
+
         } else {
             children[0] = parent1;
             children[1] = parent2;
@@ -194,21 +228,22 @@ public class NSGA2 {
 
     private SolutionRepresentation individualMutate(SolutionRepresentation child) {
         Random rnd = threadSafeRandom.get();
-        if (rnd.nextDouble() < this.individualMutationRate){
-            //could do just one type of mutation
-            if (rnd.nextDouble() < this.probDistOfDifferentMutationTypes){
-                return mutationType1(child);
-            } else {
-                return mutationType2(child);
-            }
+        if (rnd.nextDouble() < this.probDistOfDifferentMutationTypes){
+            return mutationType1(child);
         } else {
-            return child;
+            return mutationType2(child);
         }
     }
 
     private SolutionRepresentation mutationType1(SolutionRepresentation child){
+        Random rnd = threadSafeRandom.get();
         //todo implement mutation
-        //simple flipping arrows?
+        for (Pixel pixel : child.getSolution()) {
+            if (rnd.nextDouble() < this.individualMutationRate){
+                int newDir = rnd.nextInt(9);
+                pixel.setConnection(PossibleConnections.values()[newDir]);
+            }
+        }
         return child;
     }
 
