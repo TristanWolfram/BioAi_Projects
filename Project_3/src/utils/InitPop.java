@@ -20,7 +20,7 @@ public abstract class InitPop {
 
     // Create the individuals in parallel for speed
     public static ArrayList<SolutionRepresentation> generateSmartPopulation(int populationSize, BufferedImage buffImg,
-            int populationLength) {
+            double colorDiffCutOutForGeneration) {
 
         // Concurrent collection to store individuals
         ConcurrentLinkedQueue<SolutionRepresentation> pop = new ConcurrentLinkedQueue<>();
@@ -32,7 +32,7 @@ public abstract class InitPop {
             customThreadPool.submit(() -> {
                 IntStream.range(0, populationSize).parallel().forEach(i -> {
                     // Add the individual to the concurrent collection
-                    pop.add(generateSmartIndividualGreedy(buffImg, populationLength));
+                    pop.add(generateSmartIndividualGreedy(buffImg, colorDiffCutOutForGeneration));
                     System.out.println("created individual");
                 });
             }).get(); // Waiting for all tasks to complete
@@ -146,7 +146,7 @@ public abstract class InitPop {
 
     }
 
-    private static SolutionRepresentation generateSmartIndividualGreedy(BufferedImage buffImg, int populationLength) {
+    private static SolutionRepresentation generateSmartIndividualGreedy(BufferedImage buffImg, double colorDiffCutOutForGeneration) {
         //todo Somehow prevent it from creating alot of very small segments (or finding the right color diff at 222)
         Image img = loadImage(buffImg);
         Pixel[][] pixels = img.getPixels();
@@ -167,7 +167,6 @@ public abstract class InitPop {
         Set<Integer> pixelKeysVisited = new HashSet<Integer>();
 
         while (!pixelOptions.isEmpty()) {
-            System.out.println(pixelOptions.size());
             // thread safe random
             Random rnd = threadSafeRandom.get();
             // select a random pixel to start a region
@@ -184,7 +183,7 @@ public abstract class InitPop {
             Set<Integer> visitedThisLoop = new HashSet<>();
             while (search) {
                 // get and filter new neighbours
-                List<Integer> neighbourKeys = currentPixel.getNeighbors();
+                List<Integer> neighbourKeys = currentPixel.getNeighbors().subList(0, 4);//only get 4dir neighbours for this???
                 ArrayList<Object[]> neighbours = new ArrayList<Object[]>();
                 for (Integer key : neighbourKeys) {
                     if (key != null) {
@@ -219,7 +218,7 @@ public abstract class InitPop {
                     //get the neighbour
                     Object[] neighbourObject = possibleNeighbours.get(0);
                     //stop if the best distance is too big
-                    if ((Double) neighbourObject[2] > 100){
+                    if ((Double) neighbourObject[2] > colorDiffCutOutForGeneration){
                         search = false;
                     } else {
                         Pixel neighbour = (Pixel) neighbourObject[0];

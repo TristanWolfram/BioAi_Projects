@@ -8,7 +8,6 @@ public class SolutionRepresentation {
     private ArrayList<Pixel> solution = new ArrayList<>();
     private final int imgWidth;
     private ArrayList<Segment> segments = new ArrayList<>();
-    private HashMap<Pixel, Segment> pixelSegmentMap = new HashMap<>();
     private double edgeValueScore;
     private double connectivityScore;
     private double deviationScore;
@@ -48,13 +47,15 @@ public class SolutionRepresentation {
             score[2] = this.deviationScore;
         } else {
             score = Score.calcScore(getSegments(), this);
+            this.edgeValueScore = score[0];
+            this.connectivityScore = score[1];
+            this.deviationScore = score[2];
         }
         return score;
     }
 
     public ArrayList<Segment> generateSegments() {
         clearPixelAssignments();
-        clearHashMap();
 
         HashSet<Segment> segments = new HashSet<>();
 
@@ -92,11 +93,11 @@ public class SolutionRepresentation {
                 Segment s = new Segment();
                 s.setSegment(visited);
                 markPixelAsAssigned(visited);
-                assignPixelsToSegment(visited, s);
+//                assignPixelsToSegment(visited, s);
                 segments.add(s);
             } else {
-                Segment s = findSegment(neighbourEnd);
-                assignPixelsToSegment(visited, s);
+                Segment s = findSegment(neighbourEnd, segments);
+//                assignPixelsToSegment(visited, s);
                 s.getSegment().addAll(visited);
             }
 
@@ -120,7 +121,6 @@ public class SolutionRepresentation {
     private void depthFirstSearch(Pixel p, Segment s) {
         p.assigned = true;
         s.addPixel(p);
-        pixelSegmentMap.put(p, s);
 
         int nextKey = p.getConnectedNeighbor();
         Pixel next = solution.get(nextKey);
@@ -129,14 +129,13 @@ public class SolutionRepresentation {
         }
     }
 
-    private Segment findSegment(Pixel p) {
-        return pixelSegmentMap.get(p);
-    }
-
-    private void assignPixelsToSegment(HashSet<Pixel> pixels, Segment s) {
-        for (Pixel p : pixels) {
-            pixelSegmentMap.put(p, s);
+    private Segment findSegment(Pixel p, HashSet<Segment> segments) {
+        for (Segment segment: segments) {
+            if (segment.contains(p)){
+                return segment;
+            }
         }
+        return null;
     }
 
     private void clearPixelAssignments() {
@@ -149,10 +148,6 @@ public class SolutionRepresentation {
         for (Pixel p : pixels) {
             p.assigned = true;
         }
-    }
-
-    private void clearHashMap() {
-        pixelSegmentMap.clear();
     }
 
     public String toString() {

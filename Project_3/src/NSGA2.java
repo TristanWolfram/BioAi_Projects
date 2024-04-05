@@ -3,7 +3,6 @@ import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.IntStream;
 
 import utils.*;
 
@@ -21,6 +20,8 @@ public class NSGA2 {
     private int amountOfParents;
     private boolean useSmartPopGeneration;
     private ArrayList<SolutionRepresentation> population;
+    private int amountOfCrossoverPoints;
+    private double colorDiffCutOutForGeneration;
 
     private boolean useFrontier;
     private double edgeScoreMulti;
@@ -35,7 +36,7 @@ public class NSGA2 {
             boolean useTime, double crossoverRate, double individualMutationRate,
             double probDistOfDifferentMutationTypes,
             int amountOfParents, boolean useSmartPopGeneration, boolean useFrontier, double edgeScoreMulti,
-            double connectivityScoreMulti, double deviationScoreMulti) {
+            double connectivityScoreMulti, double deviationScoreMulti, int amountOfCrossoverPoints, double colorDiffCutOutForGeneration) {
         this.img = img;
         this.populationLength = img.getHight() * img.getWidth();
         this.generations = generations;
@@ -43,6 +44,7 @@ public class NSGA2 {
         this.useTime = useTime;
 
         this.crossoverRate = crossoverRate;
+        this.amountOfCrossoverPoints = amountOfCrossoverPoints;
         // prob of a individual getting a mutation
         this.individualMutationRate = individualMutationRate;
         // Prob of different mutation types; 0.4 40% small swap, 60% big swap
@@ -51,6 +53,7 @@ public class NSGA2 {
         this.populationSize = populationSize;
         this.amountOfParents = amountOfParents;
         this.useSmartPopGeneration = useSmartPopGeneration;
+        this.colorDiffCutOutForGeneration = colorDiffCutOutForGeneration;
         this.population = null;
 
         this.useFrontier = useFrontier;
@@ -59,14 +62,16 @@ public class NSGA2 {
         this.deviationScoreMulti = deviationScoreMulti;
         this.buffImg = bufferedImage;
 
+
+        System.out.println("Creating initial pop");
         // init pop
         if (this.useSmartPopGeneration) {
-            population = InitPop.generateSmartPopulation(populationSize, buffImg, populationLength);
+            population = InitPop.generateSmartPopulation(populationSize, buffImg, colorDiffCutOutForGeneration);
         } else {
             population = InitPop.generatePopulation(populationSize, buffImg);
         }
-
-        // todo function to calc initial scores but threaded so its faster
+        //to speed up the score calculating, calc them threaded at the start
+        calcScoresThreaded();
 
         System.out.println("Initialized the genetic algortihm with:\n" + "Generations: " + generations
                 + "\nPopulation size: " + populationSize + "\nInput image: " + img.getHight() + "x" + img.getWidth()
@@ -79,17 +84,24 @@ public class NSGA2 {
 
     public void run() {
         // run time based or amount of generations
+        System.out.println("Running the genetic algorithm");
         if (useTime) {
             long startTime = System.currentTimeMillis();
+            int i = 0;
             while ((System.currentTimeMillis() - startTime) < this.amountOfSeconds * 1000) {
+                System.out.println("Gen: " + i);
                 runGeneration();
+//                runGenerationTimed();
+                i++;
             }
         } else {
             for (int i = 0; i <= this.generations; i++) {
+                System.out.println("Gen: " + i);
                 runGeneration();
+//                runGenerationTimed();
             }
         }
-        System.out.println("Running the genetic algorithm");
+        Visualizer.visualizeSolution(this.population.get(0));
     }
 
     private void runGeneration() {
@@ -107,20 +119,78 @@ public class NSGA2 {
         // add new children to pop
         this.population.addAll(mutatedChildren);
         // select survivors
-        if (useFrontier) {
+        if (!useFrontier) {
             this.population = this.selectTop(this.population, this.populationSize);
         } else {
             this.population = this.selectBestFrontier(this.population, this.populationSize);
         }
 
-        double[] scores1 = this.population.get(0).getScore();
-        double combinedScore1 = edgeScoreMulti * scores1[0] + connectivityScoreMulti * scores1[1]
-                + deviationScoreMulti * scores1[2];
-        System.out.println(combinedScore1);
+        //print best score
+        double[] scores = this.population.get(0).getScore();
+        double combinedScore = edgeScoreMulti * scores[0] + connectivityScoreMulti * scores[1]
+                + deviationScoreMulti * scores[2];
+        System.out.println("totalScore: " + combinedScore);
+        System.out.println("edgeScore: " + edgeScoreMulti * scores[0]);
+        System.out.println("connectivityScore: " + connectivityScoreMulti * scores[1]);
+        System.out.println("deviationScore: " + deviationScoreMulti * scores[2]);
+    }
+
+    private void runGenerationTimed(){
+        long startTime, endTime;
+
+        // select parents
+        startTime = System.nanoTime();
+        ArrayList<SolutionRepresentation> parents;
+        if (!useFrontier) {
+            parents = this.selectTop(this.population, this.amountOfParents);
+        } else {
+            parents = this.selectBestFrontier(this.population, this.amountOfParents);
+        }
+        endTime = System.nanoTime();
+        System.out.println("Select parents duration: " + (endTime - startTime) / 1.0e9 + " seconds");
+
+        // perform crossover
+        startTime = System.nanoTime();
+        HashSet<SolutionRepresentation> children = this.crossOver(new HashSet<>(parents));
+        endTime = System.nanoTime();
+        System.out.println("Crossover duration: " + (endTime - startTime) / 1.0e9 + " seconds");
+
+        // perform mutation
+        startTime = System.nanoTime();
+        HashSet<SolutionRepresentation> mutatedChildren = this.mutate(new HashSet<>(children));
+        endTime = System.nanoTime();
+        System.out.println("Mutation duration: " + (endTime - startTime) / 1.0e9 + " seconds");
+
+        // add new children to pop
+        startTime = System.nanoTime();
+        this.population.addAll(mutatedChildren);
+        endTime = System.nanoTime();
+        System.out.println("Adding new children duration: " + (endTime - startTime) / 1.0e9 + " seconds");
+
+        //calcScoresThreaded();
+
+        // select survivors
+        startTime = System.nanoTime();
+        if (!useFrontier) {
+            this.population = this.selectTop(this.population, this.populationSize);
+        } else {
+            this.population = this.selectBestFrontier(this.population, this.populationSize);
+        }
+        endTime = System.nanoTime();
+        System.out.println("Select survivors duration: " + (endTime - startTime) / 1.0e9 + " seconds");
+
+        //print best score
+        double[] scores = this.population.get(0).getScore();
+        double combinedScore = edgeScoreMulti * scores[0] + connectivityScoreMulti * scores[1]
+                + deviationScoreMulti * scores[2];
+        System.out.println("totalScore: " + combinedScore);
+        System.out.println("edgeScore: " + edgeScoreMulti * scores[0]);
+        System.out.println("connectivityScore: " + connectivityScoreMulti * scores[1]);
+        System.out.println("deviationScore: " + deviationScoreMulti * scores[2]);
     }
 
     private ArrayList<SolutionRepresentation> selectTop(ArrayList<SolutionRepresentation> pop, int amount) {
-        Collections.sort(pop, new Comparator<SolutionRepresentation>() {
+        pop.sort(new Comparator<SolutionRepresentation>() {
             @Override
             public int compare(SolutionRepresentation o1, SolutionRepresentation o2) {
                 double[] scores1 = o1.getScore();
@@ -138,9 +208,10 @@ public class NSGA2 {
     }
 
     private ArrayList<SolutionRepresentation> selectBestFrontier(ArrayList<SolutionRepresentation> pop, int amount) {
+        calcScoresThreaded();
         // todo fancy stuff with pareto optimal frontier etc.
         // slide 49-61 (50 for overview) of BioAI_2024_Week_12_v2.pdf
-        return new ArrayList<>(pop);
+        return new ArrayList<>(pop.subList(0, amount));
     }
 
     private HashSet<SolutionRepresentation> crossOver(HashSet<SolutionRepresentation> parents) {
@@ -179,7 +250,7 @@ public class NSGA2 {
         // check if we do crossover
         if (rnd.nextDouble() < this.crossoverRate) {
             // todo preform crossover logic with the 2 parents
-            int amountOfCrossoverPoints = rnd.nextInt(2) + 1;
+            int amountOfCrossoverPoints = rnd.nextInt(this.amountOfCrossoverPoints) + 1;
             // select the points to do crossover at random
             ArrayList<Integer> crossoverPoints = new ArrayList<>();
             for (int i = 0; i < amountOfCrossoverPoints; i++) {
@@ -250,10 +321,16 @@ public class NSGA2 {
 
     public SolutionRepresentation mutationType1(SolutionRepresentation child) {
         Random rnd = threadSafeRandom.get();
-        // todo implement mutation
         for (Pixel pixel : child.getSolution()) {
             if (rnd.nextDouble() < this.individualMutationRate) {
-                int newDir = rnd.nextInt(9);
+                //this is not selecting OOB connections
+                ArrayList<Integer> dirOptions = new ArrayList<Integer>();
+                for (int i = 0; i < pixel.neighbors.size(); i++) {
+                    if (pixel.neighbors.get(i) != null) {
+                        dirOptions.add(i);
+                    }
+                }
+                int newDir = dirOptions.get(rnd.nextInt(dirOptions.size()));
                 pixel.setConnection(PossibleConnections.values()[newDir]);
             }
         }
@@ -266,4 +343,17 @@ public class NSGA2 {
         return child;
     }
 
+    private void calcScoresThreaded(){
+        // Custom ForkJoinPool to control the parallelism level
+        ForkJoinPool customThreadPool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
+        try {
+            customThreadPool.submit(() -> population.parallelStream().forEach(individual -> {
+                individual.getScore();
+            })).get(); // Wait for all tasks to complete
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            customThreadPool.shutdown();
+        }
+    }
 }

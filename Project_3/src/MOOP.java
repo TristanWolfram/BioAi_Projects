@@ -25,31 +25,30 @@ public class MOOP {
         System.out.println("\n");
         // img.show();
 
-        // Testing the neighbors
-        // System.out.println(img.getPixels()[0][0].getKey() + " " +
-        // img.getPixels()[0][0].getNeighbors());
-
-        int generations = 5;
-        int populationSize = 1;
+        int generations = 10;
+        int populationSize = 20;
         int amountOfSeconds = 360;
         boolean useTime = false;
-        double crossoverRate = 1;
-        double individualMutationRate = 0.5;
-        double probDistOfDifferentMutationTypes = 0.5;
+        double crossoverRate = 0.8;
+        int amountOfCrossoverPoints = 20;
+        double individualMutationRate = 0.0001;
+        double probDistOfDifferentMutationTypes = 1;
         int amountOfParents = 4;
         boolean useSmartPopGeneration = true;
+        double colorDiffCutOutForGeneration = 120;
 
         boolean useFrontier = false;
-        double edgeScoreMulti = 0.3;
-        double connectivityScoreMulti = 0.4;
-        double deviationScoreMulti = 0.4;
+        //
+        double edgeScoreMulti = 0.0001; //maximize
+        double connectivityScoreMulti = -0.05; //minimize
+        double deviationScoreMulti = -0.00002; // minimize
 
         NSGA2 GA = new NSGA2(img, imgBuff, generations, populationSize, amountOfSeconds, useTime, crossoverRate,
                 individualMutationRate, probDistOfDifferentMutationTypes, amountOfParents, useSmartPopGeneration,
-                useFrontier, edgeScoreMulti, connectivityScoreMulti, deviationScoreMulti);
-        // System.out.println("test");
+                useFrontier, edgeScoreMulti, connectivityScoreMulti, deviationScoreMulti, amountOfCrossoverPoints, colorDiffCutOutForGeneration);
 
-        // GA.run();
+        //GA.run();
+
         // System.out.println(GA.getPopulation().get(0));
         // SolutionRepresentation test = GA.getPopulation().get(0);
         // System.out.println(test.getScore()[0]);

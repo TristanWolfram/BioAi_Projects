@@ -86,7 +86,7 @@ public class Visualizer {
     public static void saveImage(Image img, String name) {
         BufferedImage bufferedImage = img.toBufferedImage();
         File outputfile = new File(
-                "Project_3/Project 3 evaluator/Project 3 evaluator/student_segments/" + name + ".jpg");
+                "Project_3/Project 3 evaluator/Project 3 evaluator/student_segments/results/" + name + ".jpg");
         try {
             ImageIO.write(bufferedImage, "jpg", outputfile);
         } catch (Exception e) {
