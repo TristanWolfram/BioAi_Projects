@@ -6,6 +6,7 @@ import utils.Visualizer;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
@@ -31,13 +32,14 @@ public class MOOP {
         boolean useTime = false;
         double crossoverRate = 0.8;
         int amountOfCrossoverPoints = 20;
+        //might have to be very high in order to actually cause a change to the segments
         double individualMutationRate = 0.0001;
         double probDistOfDifferentMutationTypes = 1;
         int amountOfParents = 4;
         boolean useSmartPopGeneration = true;
         double colorDiffCutOutForGeneration = 120;
 
-        boolean useFrontier = false;
+        boolean useFrontier = true;
         //
         double edgeScoreMulti = 0.0001; //maximize
         double connectivityScoreMulti = -0.05; //minimize
@@ -47,7 +49,7 @@ public class MOOP {
                 individualMutationRate, probDistOfDifferentMutationTypes, amountOfParents, useSmartPopGeneration,
                 useFrontier, edgeScoreMulti, connectivityScoreMulti, deviationScoreMulti, amountOfCrossoverPoints, colorDiffCutOutForGeneration);
 
-        //GA.run();
+        GA.run();
 
         // System.out.println(GA.getPopulation().get(0));
         // SolutionRepresentation test = GA.getPopulation().get(0);

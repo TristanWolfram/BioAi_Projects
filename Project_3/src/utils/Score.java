@@ -17,7 +17,6 @@ public abstract class Score {
 
     private static double edgeScore(Segment segment, SolutionRepresentation solution) {
         double edgeScore = 0;
-        // todo implement this scoring formula from assignment description
         for (Pixel pixel : segment.getSegment()) {
             ArrayList<Integer> neighbourKeys = pixel.getNeighbors();
 
@@ -35,7 +34,6 @@ public abstract class Score {
 
     private static double connectivityScore(Segment segment, SolutionRepresentation solution) {
         double connectivityScore = 0;
-        // todo implement this scoring formula from assignment description
         for (Pixel pixel : segment.getSegment()) {
             ArrayList<Integer> neighbourKeys = pixel.getNeighbors();
 

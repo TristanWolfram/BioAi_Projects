@@ -33,13 +33,13 @@ public abstract class InitPop {
                 IntStream.range(0, populationSize).parallel().forEach(i -> {
                     // Add the individual to the concurrent collection
                     pop.add(generateSmartIndividualGreedy(buffImg, colorDiffCutOutForGeneration));
-                    System.out.println("created individual");
                 });
             }).get(); // Waiting for all tasks to complete
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
             customThreadPool.shutdown();
+            System.out.println("created individuals");
         }
 
         return new ArrayList<>(pop);
@@ -147,7 +147,7 @@ public abstract class InitPop {
     }
 
     private static SolutionRepresentation generateSmartIndividualGreedy(BufferedImage buffImg, double colorDiffCutOutForGeneration) {
-        //todo Somehow prevent it from creating alot of very small segments (or finding the right color diff at 222)
+        //todo Somehow prevent it from creating a lot of very small segments (or finding the right color diff at 222)
         Image img = loadImage(buffImg);
         Pixel[][] pixels = img.getPixels();
         int width = img.getWidth();

@@ -28,6 +28,8 @@ public class NSGA2 {
     private double connectivityScoreMulti;
     private double deviationScoreMulti;
 
+    private int totalFrontierCount;
+
     // Define threadSafeRandom as a static field with initial value for each thread
     private static final ThreadLocal<Random> threadSafeRandom = ThreadLocal
             .withInitial(() -> new Random(ThreadLocalRandom.current().nextInt()));
@@ -62,6 +64,7 @@ public class NSGA2 {
         this.deviationScoreMulti = deviationScoreMulti;
         this.buffImg = bufferedImage;
 
+        this.totalFrontierCount = 0;
 
         System.out.println("Creating initial pop");
         // init pop
@@ -115,9 +118,11 @@ public class NSGA2 {
         // preform crossover
         HashSet<SolutionRepresentation> children = this.crossOver(new HashSet<>(parents));
         // preform mutation
-        HashSet<SolutionRepresentation> mutatedChildren = this.mutate(new HashSet<>(children));
+        //HashSet<SolutionRepresentation> mutatedChildren = this.mutate(new HashSet<>(children));
         // add new children to pop
-        this.population.addAll(mutatedChildren);
+        this.population.addAll(children);
+        // do this to speed up the process
+        //calcScoresThreaded();
         // select survivors
         if (!useFrontier) {
             this.population = this.selectTop(this.population, this.populationSize);
@@ -167,9 +172,9 @@ public class NSGA2 {
         endTime = System.nanoTime();
         System.out.println("Adding new children duration: " + (endTime - startTime) / 1.0e9 + " seconds");
 
-        //calcScoresThreaded();
-
         // select survivors
+        // do this to speed up the process
+        calcScoresThreaded();
         startTime = System.nanoTime();
         if (!useFrontier) {
             this.population = this.selectTop(this.population, this.populationSize);
@@ -207,11 +212,129 @@ public class NSGA2 {
         return new ArrayList<>(pop.subList(0, amount));
     }
 
-    private ArrayList<SolutionRepresentation> selectBestFrontier(ArrayList<SolutionRepresentation> pop, int amount) {
-        calcScoresThreaded();
-        // todo fancy stuff with pareto optimal frontier etc.
+    public ArrayList<SolutionRepresentation> selectBestFrontier(ArrayList<SolutionRepresentation> pop, int amount) {
         // slide 49-61 (50 for overview) of BioAI_2024_Week_12_v2.pdf
+        // first, get a list of the frontiers
+        ArrayList<ArrayList<SolutionRepresentation>> frontiers = new ArrayList<>();
+        // keep track of the amount
+        this.totalFrontierCount = 0;
+        // copy this to keep track of the removed individuals
+        ArrayList<SolutionRepresentation> alteredPop = new ArrayList<>(pop);
+        //get the new frontiers recursively
+        while(totalFrontierCount < amount){
+            ArrayList<SolutionRepresentation> newFrontier = this.getFrontier(alteredPop);
+            frontiers.add(newFrontier);
+            alteredPop.removeAll(newFrontier);
+            totalFrontierCount += newFrontier.size();
+        }
+        //get results
+        ArrayList<SolutionRepresentation> result = new ArrayList<>();
+        if (totalFrontierCount == amount){
+            //lucky, no crowding required
+            for (ArrayList<SolutionRepresentation> frontier: frontiers) {
+                result.addAll(frontier);
+            }
+        } else {
+            for (int i = 0; i < frontiers.size(); i++) {
+                //only do crowding for the last element
+                if (i == frontiers.size() - 1){
+                    result.addAll(frontierCrowding(frontiers.get(i), totalFrontierCount - amount));
+                } else {
+                    result.addAll(frontiers.get(i));
+                }
+            }
+        }
         return new ArrayList<>(pop.subList(0, amount));
+    }
+
+    private ArrayList<SolutionRepresentation> getFrontier(ArrayList<SolutionRepresentation> allIndividuals){
+        //keep track of the frontier
+        ArrayList<SolutionRepresentation> frontier = new ArrayList<>();
+        //loop through the entire list
+        for (SolutionRepresentation individual: allIndividuals) {
+            //get the score to compare later
+            double[] newScore = individual.getScore();
+            if(frontier.size() != 0) {
+                //keep track of individuals to remove from the frontier if they are dominated
+                ArrayList<SolutionRepresentation> toRemove = new ArrayList<>();
+                boolean addNewIndividual = false;
+
+                for (SolutionRepresentation frontierIndividual: frontier) {
+                    //get the frontier score to compare
+                    double[] frontierScore = frontierIndividual.getScore();
+
+                    if (newScore[0] > frontierScore[0] && newScore[1] < frontierScore[1] && newScore[2] < frontierScore[2]){
+                        //fully dominated -> remove this frontierIndividual
+                        toRemove.add(frontierIndividual);
+                        //allow new individual to be added
+                        addNewIndividual = true;
+                    } else if(newScore[0] > frontierScore[0] || newScore[1] < frontierScore[1] || newScore[2] < frontierScore[2]){
+                        //partly dominated -> don't remove this frontierIndividual, but allow new individual to be added
+                        addNewIndividual = true;
+                    }
+                }
+                // execute results
+                frontier.removeAll(toRemove);
+                if (addNewIndividual){
+                    frontier.add(individual);
+                }
+            }else {
+                frontier.add(individual);
+            }
+        }
+        return frontier;
+    }
+
+    private ArrayList<SolutionRepresentation> frontierCrowding(ArrayList<SolutionRepresentation> frontier, int amount){
+        //initialize crowding distance for each individual
+        frontier.forEach(individual -> individual.setCrowdingDistance(0.0));
+        //keep track of boundary individuals
+        ArrayList<SolutionRepresentation> frontierBoundaries = new ArrayList<>();
+        //for each score
+        //do this to go one side of the cuboid at a time, per score
+        for (int objIndex = 0; objIndex < 3; objIndex++) {
+            final int index = objIndex;
+
+            //sort individuals based on the score
+            frontier.sort(Comparator.comparingDouble(o -> o.getScore()[index]));
+
+            //set the boundary individuals' crowding distance to infinity
+            frontier.get(0).setCrowdingDistance(Double.POSITIVE_INFINITY);
+            frontier.get(frontier.size() - 1).setCrowdingDistance(Double.POSITIVE_INFINITY);
+            //keep track of boundary individuals
+            frontierBoundaries.add(frontier.get(0));
+            frontierBoundaries.add(frontier.get(frontier.size() - 1));
+
+            //calculate crowding distance for intermediate individuals
+            double minObjectiveValue = frontier.get(0).getScore()[index];
+            double maxObjectiveValue = frontier.get(frontier.size() - 1).getScore()[index];
+            //get range
+            double range = maxObjectiveValue - minObjectiveValue;
+
+            for (int i = 1; i < frontier.size() - 1; i++) {
+                double prevDist = frontier.get(i).getCrowdingDistance();
+                //only update if the current distance is not infinity (preserve the boundaries of the front)
+                if (!Double.isInfinite(prevDist)) {
+                    double distance = frontier.get(i + 1).getScore()[index] - frontier.get(i - 1).getScore()[index];
+                    if (range > 0) {
+                        double normalizedDistance = distance / range;
+                        frontier.get(i).setCrowdingDistance(frontier.get(i).getCrowdingDistance() + normalizedDistance);
+                    }
+                }
+            }
+        }
+        //sort individuals by decreasing crowding distance
+        frontier.sort((o1, o2) -> Double.compare(o2.getCrowdingDistance(), o1.getCrowdingDistance()));
+        //return the crowded result
+        if (amount < frontierBoundaries.size()){
+            //this happens when the amount of things to add is smaller than the amount of boundaries from the frontier
+            //in this case, we select random ones from the boundaries
+            Collections.shuffle(frontierBoundaries);
+            return new ArrayList<>(frontierBoundaries.subList(0, amount));
+        } else {
+            //return best X amount
+            return new ArrayList<>(frontier.subList(0, amount));
+        }
     }
 
     private HashSet<SolutionRepresentation> crossOver(HashSet<SolutionRepresentation> parents) {
@@ -221,6 +344,7 @@ public class NSGA2 {
         ForkJoinPool customThreadPool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
         // Copy a list of parents for access
         ArrayList<SolutionRepresentation> parentList = new ArrayList<>(parents);
+        //todo try changing to for and selecting 2 parents at a time
         try {
             customThreadPool.submit(() -> parents.parallelStream().forEach(parent -> {
                 // select other parent
@@ -249,7 +373,6 @@ public class NSGA2 {
         Random rnd = threadSafeRandom.get();
         // check if we do crossover
         if (rnd.nextDouble() < this.crossoverRate) {
-            // todo preform crossover logic with the 2 parents
             int amountOfCrossoverPoints = rnd.nextInt(this.amountOfCrossoverPoints) + 1;
             // select the points to do crossover at random
             ArrayList<Integer> crossoverPoints = new ArrayList<>();
@@ -260,10 +383,17 @@ public class NSGA2 {
                 } while (crossoverPoints.contains(newPoint));// dont select the same point twice
                 crossoverPoints.add(newPoint);
             }
-            SolutionRepresentation child1 = new SolutionRepresentation(new ArrayList<Pixel>(parent1.getSolution()),
-                    parent1.getImageWidth());
-            SolutionRepresentation child2 = new SolutionRepresentation(new ArrayList<Pixel>(parent2.getSolution()),
-                    parent2.getImageWidth());
+            //prevent children and parents from using the same pixels
+            ArrayList<Pixel> newPixelsChild1 = new ArrayList<Pixel>();
+            ArrayList<Pixel> newPixelsChild2 = new ArrayList<Pixel>();
+            for (Pixel pixel: parent1.getSolution()) {
+                newPixelsChild1.add(new Pixel(pixel));
+            }
+            for (Pixel pixel: parent2.getSolution()) {
+                newPixelsChild2.add(new Pixel(pixel));
+            }
+            SolutionRepresentation child1 = new SolutionRepresentation(newPixelsChild1, parent1.getImageWidth());
+            SolutionRepresentation child2 = new SolutionRepresentation(newPixelsChild2, parent2.getImageWidth());
             // start cutting
             Collections.sort(crossoverPoints);
             int prevPoint = -1;
@@ -287,8 +417,9 @@ public class NSGA2 {
             children[1] = child2;
 
         } else {
-            children[0] = parent1;
-            children[1] = parent2;
+            //these have to be new elements, not copies
+            children[0] = new SolutionRepresentation(parent1);
+            children[1] = new SolutionRepresentation(parent2);
         }
         return children;
     }
@@ -338,7 +469,7 @@ public class NSGA2 {
     }
 
     private SolutionRepresentation mutationType2(SolutionRepresentation child) {
-        // todo implement other mutation
+        // todo maybe implement other mutation
         // other mutation ideas??
         return child;
     }
@@ -347,9 +478,7 @@ public class NSGA2 {
         // Custom ForkJoinPool to control the parallelism level
         ForkJoinPool customThreadPool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
         try {
-            customThreadPool.submit(() -> population.parallelStream().forEach(individual -> {
-                individual.getScore();
-            })).get(); // Wait for all tasks to complete
+            customThreadPool.submit(() -> population.parallelStream().forEach(SolutionRepresentation::getScore)).get(); // Wait for all tasks to complete
         } catch (Exception e) {
             e.printStackTrace();
         } finally {

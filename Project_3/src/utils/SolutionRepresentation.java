@@ -11,6 +11,7 @@ public class SolutionRepresentation {
     private double edgeValueScore;
     private double connectivityScore;
     private double deviationScore;
+    private double crowdingDistance;
 
     public SolutionRepresentation(ArrayList<Pixel> solution, int imgWidth) {
         this.solution = solution;
@@ -18,6 +19,26 @@ public class SolutionRepresentation {
         this.edgeValueScore = -1;
         this.connectivityScore = -1;
         this.deviationScore = -1;
+        this.crowdingDistance = 0.0;
+    }
+    //overloaded constructor for when creating copies in crossover
+    public SolutionRepresentation(SolutionRepresentation old) {
+        this.solution = old.getSolution();
+        this.imgWidth = old.getImageWidth();
+        this.segments = old.getSegments();
+        double[] scores = old.getScore();
+        this.edgeValueScore = scores[0];
+        this.connectivityScore = scores[1];
+        this.deviationScore = scores[2];
+        this.crowdingDistance = old.getCrowdingDistance();
+    }
+
+    public double getCrowdingDistance(){
+        return this.crowdingDistance;
+    }
+
+    public void setCrowdingDistance(double newCrowdingDistance){
+        this.crowdingDistance = newCrowdingDistance;
     }
 
     public int getImageWidth() {
@@ -61,8 +82,9 @@ public class SolutionRepresentation {
 
         ArrayList<Pixel> pixelQueue = new ArrayList<>(solution);
         int iterations = 0;
+        //loop through pixels
         while (!pixelQueue.isEmpty()) {
-
+            //get fist pixel
             Pixel currentPixel = pixelQueue.get(0);
             Pixel neighbourEnd = null;
             HashSet<Pixel> visited = new HashSet<>();
@@ -76,7 +98,7 @@ public class SolutionRepresentation {
                     endTraverse = true;
                 } else {
                     Pixel next = solution.get(nextKey);
-                    if (next.assigned == true) {
+                    if (next.assigned) {
                         endTraverse = true;
                         createNewSegment = false;
                         neighbourEnd = next;
@@ -93,11 +115,9 @@ public class SolutionRepresentation {
                 Segment s = new Segment();
                 s.setSegment(visited);
                 markPixelAsAssigned(visited);
-//                assignPixelsToSegment(visited, s);
                 segments.add(s);
             } else {
                 Segment s = findSegment(neighbourEnd, segments);
-//                assignPixelsToSegment(visited, s);
                 s.getSegment().addAll(visited);
             }
 
@@ -135,6 +155,8 @@ public class SolutionRepresentation {
                 return segment;
             }
         }
+        //somehow, during threading, this can happen... and cause an NPE
+        System.out.println("problem");
         return null;
     }
 

@@ -24,6 +24,15 @@ public class Pixel {
         this.neighbors = neighbours;
     }
 
+    //make a copy but a new element
+    public Pixel(Pixel pixel) {
+        this.key = pixel.key;
+        this.connection = pixel.connection;
+        this.neighbors = pixel.neighbors;
+        this.assigned = pixel.assigned;
+        this.color = pixel.color;
+    }
+
     public int getKey() {
         return key;
     }
