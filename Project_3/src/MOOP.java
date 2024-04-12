@@ -17,7 +17,7 @@ public class MOOP {
         frame.setTitle("Image Display");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        String imgPath = "Project_3/training_imgs/86016/Test image.jpg";
+        String imgPath = "Project_3/training_imgs/118035/Test image.jpg";
         // imgPath = "Project_3/training_imgs/ForTesting3x3White.jpg";
         // imgPath = "Project_3/training_imgs/ForTesting10x10White.jpg";
         BufferedImage imgBuff = ImageIO.read(new File(imgPath));
@@ -26,16 +26,16 @@ public class MOOP {
         System.out.println("\n");
         // img.show();
 
-        int generations = 10;
+        int generations = 3;
         int populationSize = 20;
         int amountOfSeconds = 360;
         boolean useTime = false;
-        double crossoverRate = 0.8;
+        double crossoverRate = 1;
         int amountOfCrossoverPoints = 20;
         //might have to be very high in order to actually cause a change to the segments
         double individualMutationRate = 0.0001;
         double probDistOfDifferentMutationTypes = 1;
-        int amountOfParents = 4;
+        int amountOfParents = 8;
         boolean useSmartPopGeneration = true;
         double colorDiffCutOutForGeneration = 120;
 
@@ -49,6 +49,10 @@ public class MOOP {
                 individualMutationRate, probDistOfDifferentMutationTypes, amountOfParents, useSmartPopGeneration,
                 useFrontier, edgeScoreMulti, connectivityScoreMulti, deviationScoreMulti, amountOfCrossoverPoints, colorDiffCutOutForGeneration);
 
+        // SolutionRepresentation individual = GA.getPopulation().get(0);
+
+        // Visualizer.visualizeSolution(individual);
+
         GA.run();
 
         // System.out.println(GA.getPopulation().get(0));
@@ -60,7 +64,7 @@ public class MOOP {
         // System.out.println(s);
         // }
 
-        // Testing the crossover and mutation
+        //Testing the crossover and mutation
         // System.out.println("parents");
         // System.out.println(GA.getPopulation().get(0));
         // System.out.println(GA.getPopulation().get(1));
@@ -71,10 +75,6 @@ public class MOOP {
         // System.out.println(children[0]);
         // System.out.println("Mutated Child 0");
         // System.out.println(GA.mutationType1(children[0]));
-
-        SolutionRepresentation individual = GA.getPopulation().get(0);
-
-        Visualizer.visualizeSolution(individual);
 
         // System.out.println(GA.getPopulation().get(0).getSolution().get(0).getDistance());
 

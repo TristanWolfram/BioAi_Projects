@@ -8,6 +8,7 @@ public class SolutionRepresentation {
     private ArrayList<Pixel> solution = new ArrayList<>();
     private final int imgWidth;
     private ArrayList<Segment> segments = new ArrayList<>();
+    private HashMap<Pixel, Segment> pixelSegmentMap = new HashMap<>();
     private double edgeValueScore;
     private double connectivityScore;
     private double deviationScore;
@@ -16,6 +17,7 @@ public class SolutionRepresentation {
     public SolutionRepresentation(ArrayList<Pixel> solution, int imgWidth) {
         this.solution = solution;
         this.imgWidth = imgWidth;
+        this.pixelSegmentMap = new HashMap<>();
         this.edgeValueScore = -1;
         this.connectivityScore = -1;
         this.deviationScore = -1;
@@ -23,9 +25,15 @@ public class SolutionRepresentation {
     }
     //overloaded constructor for when creating copies in crossover
     public SolutionRepresentation(SolutionRepresentation old) {
-        this.solution = old.getSolution();
+        ArrayList<Pixel> newSolutions = new ArrayList<Pixel>();
+            for (Pixel pixel: old.getSolution()) {
+                newSolutions.add(new Pixel(pixel));
+            }
+        this.solution = newSolutions;
         this.imgWidth = old.getImageWidth();
+        //this probably breaks the therading, as the child not acceses the same segment as the parent
         this.segments = old.getSegments();
+        this.pixelSegmentMap = new HashMap<>();
         double[] scores = old.getScore();
         this.edgeValueScore = scores[0];
         this.connectivityScore = scores[1];
@@ -77,6 +85,7 @@ public class SolutionRepresentation {
 
     public ArrayList<Segment> generateSegments() {
         clearPixelAssignments();
+        clearHashMap();
 
         HashSet<Segment> segments = new HashSet<>();
 
@@ -115,9 +124,11 @@ public class SolutionRepresentation {
                 Segment s = new Segment();
                 s.setSegment(visited);
                 markPixelAsAssigned(visited);
+                assignPixelsToSegment(visited, s);
                 segments.add(s);
             } else {
-                Segment s = findSegment(neighbourEnd, segments);
+                Segment s = findSegment(neighbourEnd);
+                assignPixelsToSegment(visited, s);
                 s.getSegment().addAll(visited);
             }
 
@@ -149,15 +160,24 @@ public class SolutionRepresentation {
         }
     }
 
-    private Segment findSegment(Pixel p, HashSet<Segment> segments) {
-        for (Segment segment: segments) {
-            if (segment.contains(p)){
-                return segment;
-            }
+    private Segment findSegment(Pixel p) {
+        Segment s = pixelSegmentMap.get(p);
+        if (s == null) {
+            System.out.println(pixelSegmentMap);
+            System.out.println(p);
+            System.out.println("problem");
         }
-        //somehow, during threading, this can happen... and cause an NPE
-        System.out.println("problem");
-        return null;
+        return s;
+    }
+
+    private void assignPixelsToSegment(HashSet<Pixel> pixels, Segment s) {
+        for (Pixel p : pixels) {
+            pixelSegmentMap.put(p, s);
+        }
+    }
+
+    private void clearHashMap() {
+        pixelSegmentMap.clear();
     }
 
     private void clearPixelAssignments() {

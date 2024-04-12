@@ -118,11 +118,11 @@ public class NSGA2 {
         // preform crossover
         HashSet<SolutionRepresentation> children = this.crossOver(new HashSet<>(parents));
         // preform mutation
-        //HashSet<SolutionRepresentation> mutatedChildren = this.mutate(new HashSet<>(children));
+        HashSet<SolutionRepresentation> mutatedChildren = this.mutate(new HashSet<>(children));
         // add new children to pop
-        this.population.addAll(children);
+        this.population.addAll(mutatedChildren);
         // do this to speed up the process
-        //calcScoresThreaded();
+        calcScoresThreaded();
         // select survivors
         if (!useFrontier) {
             this.population = this.selectTop(this.population, this.populationSize);
@@ -174,7 +174,7 @@ public class NSGA2 {
 
         // select survivors
         // do this to speed up the process
-        calcScoresThreaded();
+        //calcScoresThreaded();
         startTime = System.nanoTime();
         if (!useFrontier) {
             this.population = this.selectTop(this.population, this.populationSize);
@@ -401,14 +401,21 @@ public class NSGA2 {
                 if (prevPoint == -1) {
                     prevPoint = point;
                 } else {
-                    List<Pixel> partP1 = parent1.getSolution().subList(prevPoint, point);
-                    List<Pixel> partP2 = parent2.getSolution().subList(prevPoint, point);
+                    List<Pixel> partP1 = child1.getSolution().subList(prevPoint, point);
+                    List<Pixel> partP2 = child2.getSolution().subList(prevPoint, point);
 
-                    child1.getSolution().removeAll(partP1);
-                    child1.getSolution().addAll(prevPoint, partP2);
+                    //TODO change the connection instead of changin the pixels
+                    for (int i = 0; i < partP1.size(); i++) {
+                        PossibleConnections connectionP1 = partP1.get(i).connection;
+                        PossibleConnections connectionP2 = partP2.get(i).connection;
+                        partP1.get(i).setConnection(connectionP2);
+                        partP2.get(i).setConnection(connectionP1);
+                    }
+                    // child1.getSolution().removeAll(partP1);
+                    // child1.getSolution().addAll(prevPoint, partP2);
 
-                    child2.getSolution().removeAll(partP2);
-                    child2.getSolution().addAll(prevPoint, partP1);
+                    // child2.getSolution().removeAll(partP2);
+                    // child2.getSolution().addAll(prevPoint, partP1);
 
                     prevPoint = point;
                 }

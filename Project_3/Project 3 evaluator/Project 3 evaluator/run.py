@@ -6,7 +6,7 @@ import re
 path = os.path.dirname(os.path.abspath(__file__))
 
 optimalFolder = path + "/optimal_segments"  # you may have to specify the complete path
-studentFolder = path + "/student_segments" # you may have to specify the complete path
+studentFolder = path + "/student_segments/results" # you may have to specify the complete path
 colorValueSlackRange = 40
 blackValueThreshold = 100 # colors below 100 is black
 pixelRangeCheck = 4

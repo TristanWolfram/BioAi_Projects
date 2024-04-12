@@ -28,7 +28,7 @@ public class Pixel {
     public Pixel(Pixel pixel) {
         this.key = pixel.key;
         this.connection = pixel.connection;
-        this.neighbors = pixel.neighbors;
+        this.neighbors = new ArrayList<Integer>(pixel.neighbors);
         this.assigned = pixel.assigned;
         this.color = pixel.color;
     }
