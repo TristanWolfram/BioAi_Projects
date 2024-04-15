@@ -60,6 +60,30 @@ public class Visualizer {
         return img;
     }
 
+    public static void viusalizeSegments(SolutionRepresentation solution) {
+        Image coloredSegments = visualizeImageFilling(solution);
+        saveImage(coloredSegments, "coloredSegments");
+    }
+
+    public static Image visualizeImageFilling(SolutionRepresentation solution) {
+        for (Pixel pixel : solution.getSolution()) {
+            pixel.setColor(new RGBRepresentation(255, 255, 255));
+        }
+
+        ArrayList<Segment> segments = solution.getSegments();
+        for (Segment segment : segments) {
+            // get a random color
+            int r = (int) (Math.random() * 256);
+            int g = (int) (Math.random() * 256);
+            int b = (int) (Math.random() * 256);
+
+            colorSegment(segment, new RGBRepresentation(r, g, b));
+        }
+
+        Image img = SoultionRepToImage(solution);
+        return img;
+    }
+
     public static void colorSegmentBorders(Segment segment, SolutionRepresentation solution, RGBRepresentation color,
             HashSet<Segment> coloredSegments) {
 
@@ -73,10 +97,19 @@ public class Visualizer {
                         pixel.setColor(color);
                         break;
                     }
+                } else {
+                    pixel.setColor(color);
+                    break;
                 }
             }
         }
 
+    }
+
+    public static void colorSegment(Segment segment, RGBRepresentation color) {
+        for (Pixel pixel : segment.getSegment()) {
+            pixel.setColor(color);
+        }
     }
 
     private static boolean checkIfPixelIsInGivenSegments(Pixel pixel, HashSet<Segment> coloredSegments) {
