@@ -66,7 +66,7 @@ public class NSGA2 {
         this.buffImg = bufferedImage;
 
         this.totalFrontierCount = 0;
-        this.sizeOfBestFrontier = 0;
+        this.sizeOfBestFrontier = 1;
 
         System.out.println("Creating initial pop");
         // init pop
@@ -111,7 +111,6 @@ public class NSGA2 {
 
     private void runGeneration() {
         // select parents
-        System.out.println(population.size());
         ArrayList<SolutionRepresentation> parents;
         if (!useFrontier) {
             parents = this.selectTop(this.population, this.amountOfParents);
@@ -132,8 +131,6 @@ public class NSGA2 {
         } else {
             this.population = this.selectBestFrontier(this.population, this.populationSize);
         }
-        System.out.println(population.size());
-        System.out.println("end Gen");
 
         //print best score
         double[] scores = this.population.get(0).getScore();

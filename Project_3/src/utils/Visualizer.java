@@ -5,7 +5,10 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import javax.imageio.ImageIO;
 
 public class Visualizer {
@@ -21,6 +24,7 @@ public class Visualizer {
 
     public static void visualizeFrontier(List<SolutionRepresentation> solutions) {
         int i = 0;
+        DeleteFiles();
         for (SolutionRepresentation solution : solutions) {
             //Image colorWithBorders = visualizeSegmentsColor(solution);
             Image blackWhiteWithBorders = visualizeSegmentsBlackWhite(solution);
@@ -120,6 +124,24 @@ public class Visualizer {
         try {
             ImageIO.write(bufferedImage, "jpg", outputfile);
         } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void DeleteFiles (){
+        Path directoryPath = Paths.get("Project_3/Project 3 evaluator/Project 3 evaluator/student_segments/results/");
+        try {
+            // Delete all files in the directory
+            Files.walk(directoryPath)
+                 .filter(Files::isRegularFile)  // Filter to only include regular files
+                 .forEach(path -> {
+                     try {
+                         Files.delete(path);  // Delete each file
+                     } catch (IOException e) {
+                         e.printStackTrace();
+                     }
+                 });
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }

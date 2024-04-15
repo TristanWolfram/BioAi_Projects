@@ -27,7 +27,7 @@ public class MOOP {
         // img.show();
 
         int generations = 3;
-        int populationSize = 0;
+        int populationSize = 6;
         int amountOfSeconds = 360;
         boolean useTime = false;
         double crossoverRate = 1;
@@ -36,11 +36,11 @@ public class MOOP {
         // segments
         double individualMutationRate = 0.0001;
         double probDistOfDifferentMutationTypes = 1;
-        int amountOfParents = 4;
+        int amountOfParents = 2;
         boolean useSmartPopGeneration = true;
         double colorDiffCutOutForGeneration = 70;
 
-        boolean useFrontier = true;
+        boolean useFrontier = false;
         //
         double edgeScoreMulti = 0.0001; // maximize
         double connectivityScoreMulti = -0.05; // minimize
