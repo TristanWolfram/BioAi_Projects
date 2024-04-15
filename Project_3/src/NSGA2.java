@@ -29,6 +29,7 @@ public class NSGA2 {
     private double deviationScoreMulti;
 
     private int totalFrontierCount;
+    private int sizeOfBestFrontier;
 
     // Define threadSafeRandom as a static field with initial value for each thread
     private static final ThreadLocal<Random> threadSafeRandom = ThreadLocal
@@ -65,6 +66,7 @@ public class NSGA2 {
         this.buffImg = bufferedImage;
 
         this.totalFrontierCount = 0;
+        this.sizeOfBestFrontier = 0;
 
         System.out.println("Creating initial pop");
         // init pop
@@ -104,11 +106,12 @@ public class NSGA2 {
 //                runGenerationTimed();
             }
         }
-        Visualizer.visualizeSolution(this.population.get(0));
+        Visualizer.visualizeFrontier(this.population.subList(0, sizeOfBestFrontier));
     }
 
     private void runGeneration() {
         // select parents
+        System.out.println(population.size());
         ArrayList<SolutionRepresentation> parents;
         if (!useFrontier) {
             parents = this.selectTop(this.population, this.amountOfParents);
@@ -129,6 +132,8 @@ public class NSGA2 {
         } else {
             this.population = this.selectBestFrontier(this.population, this.populationSize);
         }
+        System.out.println(population.size());
+        System.out.println("end Gen");
 
         //print best score
         double[] scores = this.population.get(0).getScore();
@@ -238,13 +243,20 @@ public class NSGA2 {
             for (int i = 0; i < frontiers.size(); i++) {
                 //only do crowding for the last element
                 if (i == frontiers.size() - 1){
-                    result.addAll(frontierCrowding(frontiers.get(i), totalFrontierCount - amount));
+                    int amountToAdd = frontiers.get(i).size() - (totalFrontierCount - amount);
+                    result.addAll(frontierCrowding(frontiers.get(i), amountToAdd));
                 } else {
                     result.addAll(frontiers.get(i));
                 }
             }
         }
-        return new ArrayList<>(pop.subList(0, amount));
+        //save Best frontier size
+        if (frontiers.size() == 1) {
+            this.sizeOfBestFrontier = amount;
+        } else {
+            this.sizeOfBestFrontier = frontiers.get(0).size();
+        }
+        return result;
     }
 
     private ArrayList<SolutionRepresentation> getFrontier(ArrayList<SolutionRepresentation> allIndividuals){

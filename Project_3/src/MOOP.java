@@ -17,7 +17,7 @@ public class MOOP {
         frame.setTitle("Image Display");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        String imgPath = "Project_3/training_imgs/118035/Test image.jpg";
+        String imgPath = "Project_3/training_imgs/86016/Test image.jpg";
         // imgPath = "Project_3/training_imgs/ForTesting3x3White.jpg";
         // imgPath = "Project_3/training_imgs/ForTesting10x10White.jpg";
         BufferedImage imgBuff = ImageIO.read(new File(imgPath));
@@ -27,7 +27,7 @@ public class MOOP {
         // img.show();
 
         int generations = 3;
-        int populationSize = 2;
+        int populationSize = 0;
         int amountOfSeconds = 360;
         boolean useTime = false;
         double crossoverRate = 1;
@@ -36,9 +36,9 @@ public class MOOP {
         // segments
         double individualMutationRate = 0.0001;
         double probDistOfDifferentMutationTypes = 1;
-        int amountOfParents = 2;
+        int amountOfParents = 4;
         boolean useSmartPopGeneration = true;
-        double colorDiffCutOutForGeneration = 120;
+        double colorDiffCutOutForGeneration = 70;
 
         boolean useFrontier = true;
         //
@@ -51,11 +51,11 @@ public class MOOP {
                 useFrontier, edgeScoreMulti, connectivityScoreMulti, deviationScoreMulti, amountOfCrossoverPoints,
                 colorDiffCutOutForGeneration);
 
-        SolutionRepresentation individual = GA.getPopulation().get(0);
+        // SolutionRepresentation individual = GA.getPopulation().get(0);
 
-        Visualizer.visualizeSolution(individual);
+        // Visualizer.visualizeSolution(individual);
 
-        // GA.run();
+        GA.run();
 
         // System.out.println(GA.getPopulation().get(0));
         // SolutionRepresentation test = GA.getPopulation().get(0);

@@ -32,7 +32,9 @@ public abstract class InitPop {
             customThreadPool.submit(() -> {
                 IntStream.range(0, populationSize).parallel().forEach(i -> {
                     // Add the individual to the concurrent collection
-                    pop.add(generateSmartIndividualGreedy(buffImg, colorDiffCutOutForGeneration));
+                    Random rnd = threadSafeRandom.get();
+                    pop.add(generateSmartIndividualGreedy(buffImg, colorDiffCutOutForGeneration * (rnd.nextDouble() + 0.5)));
+
                 });
             }).get(); // Waiting for all tasks to complete
         } catch (Exception e) {

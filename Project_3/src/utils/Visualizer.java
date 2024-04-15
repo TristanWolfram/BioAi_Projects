@@ -4,6 +4,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 
 import javax.imageio.ImageIO;
 
@@ -15,7 +16,18 @@ public class Visualizer {
         Image blackWhiteWithBorders = visualizeSegmentsBlackWhite(solution);
         blackWhiteWithBorders.show();
         saveImage(blackWhiteWithBorders, "test_black_white");
-        saveImage(colorWithBorders, "test_color");
+        //saveImage(colorWithBorders, "test_color");
+    }
+
+    public static void visualizeFrontier(List<SolutionRepresentation> solutions) {
+        int i = 0;
+        for (SolutionRepresentation solution : solutions) {
+            //Image colorWithBorders = visualizeSegmentsColor(solution);
+            Image blackWhiteWithBorders = visualizeSegmentsBlackWhite(solution);
+            saveImage(blackWhiteWithBorders, "test_black_white_" + i);
+            //saveImage(colorWithBorders, "test_color_" + i);
+            i++;
+        };
     }
 
     public static Image visualizeSegmentsColor(SolutionRepresentation solution) {
