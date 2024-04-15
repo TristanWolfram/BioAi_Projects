@@ -17,7 +17,7 @@ public class MOOP {
         frame.setTitle("Image Display");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        String imgPath = "Project_3/training_imgs/86016/Test image.jpg";
+        String imgPath = "Project_3/training_imgs/176035/Test image.jpg";
         // imgPath = "Project_3/training_imgs/ForTesting3x3White.jpg";
         // imgPath = "Project_3/training_imgs/ForTesting10x10White.jpg";
         BufferedImage imgBuff = ImageIO.read(new File(imgPath));
@@ -27,20 +27,20 @@ public class MOOP {
         // img.show();
 
         int generations = 3;
-        int populationSize = 6;
+        int populationSize = 12;
         int amountOfSeconds = 360;
         boolean useTime = false;
         double crossoverRate = 1;
         int amountOfCrossoverPoints = 20;
         // might have to be very high in order to actually cause a change to the
         // segments
-        double individualMutationRate = 0.0001;
+        double individualMutationRate = 0.001;
         double probDistOfDifferentMutationTypes = 1;
-        int amountOfParents = 2;
+        int amountOfParents = 4;
         boolean useSmartPopGeneration = true;
         double colorDiffCutOutForGeneration = 70;
 
-        boolean useFrontier = false;
+        boolean useFrontier = true;
         //
         double edgeScoreMulti = 0.0001; // maximize
         double connectivityScoreMulti = -0.05; // minimize

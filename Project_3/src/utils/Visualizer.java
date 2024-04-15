@@ -13,23 +13,21 @@ import javax.imageio.ImageIO;
 
 public class Visualizer {
 
-    public static void visualizeSolution(SolutionRepresentation solution) {
+    public static void visualizeSolution(SolutionRepresentation solution, int i) {
         Image colorWithBorders = visualizeSegmentsColor(solution);
-        colorWithBorders.show();
         Image blackWhiteWithBorders = visualizeSegmentsBlackWhite(solution);
-        blackWhiteWithBorders.show();
-        saveImage(blackWhiteWithBorders, "test_black_white");
-        //saveImage(colorWithBorders, "test_color");
+        String path = "Project_3/Project 3 evaluator/Project 3 evaluator/student_segments/results/";
+        saveImage(blackWhiteWithBorders, "test_black_white_" + i, path);
+        path = "Project_3/Project 3 evaluator/Project 3 evaluator/student_segments/coloredResults/";
+        saveImage(colorWithBorders, "test_color_" + i, path);
     }
 
     public static void visualizeFrontier(List<SolutionRepresentation> solutions) {
         int i = 0;
-        DeleteFiles();
+        DeleteFiles("Project_3/Project 3 evaluator/Project 3 evaluator/student_segments/results/");
+        DeleteFiles("Project_3/Project 3 evaluator/Project 3 evaluator/student_segments/coloredResults/");
         for (SolutionRepresentation solution : solutions) {
-            //Image colorWithBorders = visualizeSegmentsColor(solution);
-            Image blackWhiteWithBorders = visualizeSegmentsBlackWhite(solution);
-            saveImage(blackWhiteWithBorders, "test_black_white_" + i);
-            //saveImage(colorWithBorders, "test_color_" + i);
+            visualizeSolution(solution, i);
             i++;
         };
     }
@@ -62,7 +60,8 @@ public class Visualizer {
 
     public static void viusalizeSegments(SolutionRepresentation solution) {
         Image coloredSegments = visualizeImageFilling(solution);
-        saveImage(coloredSegments, "coloredSegments");
+        String path = "Project_3/Project 3 evaluator/Project 3 evaluator/student_segments/other/";
+        saveImage(coloredSegments, "coloredSegments", path);
     }
 
     public static Image visualizeImageFilling(SolutionRepresentation solution) {
@@ -150,10 +149,10 @@ public class Visualizer {
         return new SolutionRepresentation(pixels, imgWidth);
     }
 
-    public static void saveImage(Image img, String name) {
+    public static void saveImage(Image img, String name, String path) {
         BufferedImage bufferedImage = img.toBufferedImage();
         File outputfile = new File(
-                "Project_3/Project 3 evaluator/Project 3 evaluator/student_segments/results/" + name + ".jpg");
+                path + name + ".jpg");
         try {
             ImageIO.write(bufferedImage, "jpg", outputfile);
         } catch (Exception e) {
@@ -161,8 +160,8 @@ public class Visualizer {
         }
     }
 
-    public static void DeleteFiles (){
-        Path directoryPath = Paths.get("Project_3/Project 3 evaluator/Project 3 evaluator/student_segments/results/");
+    public static void DeleteFiles (String delPath){
+        Path directoryPath = Paths.get(delPath);
         try {
             // Delete all files in the directory
             Files.walk(directoryPath)
@@ -177,5 +176,6 @@ public class Visualizer {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        
     }
 }
