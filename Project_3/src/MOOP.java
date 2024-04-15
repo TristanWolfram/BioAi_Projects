@@ -27,33 +27,35 @@ public class MOOP {
         // img.show();
 
         int generations = 3;
-        int populationSize = 20;
+        int populationSize = 2;
         int amountOfSeconds = 360;
         boolean useTime = false;
         double crossoverRate = 1;
         int amountOfCrossoverPoints = 20;
-        //might have to be very high in order to actually cause a change to the segments
+        // might have to be very high in order to actually cause a change to the
+        // segments
         double individualMutationRate = 0.0001;
         double probDistOfDifferentMutationTypes = 1;
-        int amountOfParents = 8;
+        int amountOfParents = 2;
         boolean useSmartPopGeneration = true;
         double colorDiffCutOutForGeneration = 120;
 
         boolean useFrontier = true;
         //
-        double edgeScoreMulti = 0.0001; //maximize
-        double connectivityScoreMulti = -0.05; //minimize
+        double edgeScoreMulti = 0.0001; // maximize
+        double connectivityScoreMulti = -0.05; // minimize
         double deviationScoreMulti = -0.00002; // minimize
 
         NSGA2 GA = new NSGA2(img, imgBuff, generations, populationSize, amountOfSeconds, useTime, crossoverRate,
                 individualMutationRate, probDistOfDifferentMutationTypes, amountOfParents, useSmartPopGeneration,
-                useFrontier, edgeScoreMulti, connectivityScoreMulti, deviationScoreMulti, amountOfCrossoverPoints, colorDiffCutOutForGeneration);
+                useFrontier, edgeScoreMulti, connectivityScoreMulti, deviationScoreMulti, amountOfCrossoverPoints,
+                colorDiffCutOutForGeneration);
 
-        // SolutionRepresentation individual = GA.getPopulation().get(0);
+        SolutionRepresentation individual = GA.getPopulation().get(0);
 
-        // Visualizer.visualizeSolution(individual);
+        Visualizer.visualizeSolution(individual);
 
-        GA.run();
+        // GA.run();
 
         // System.out.println(GA.getPopulation().get(0));
         // SolutionRepresentation test = GA.getPopulation().get(0);
@@ -64,7 +66,7 @@ public class MOOP {
         // System.out.println(s);
         // }
 
-        //Testing the crossover and mutation
+        // Testing the crossover and mutation
         // System.out.println("parents");
         // System.out.println(GA.getPopulation().get(0));
         // System.out.println(GA.getPopulation().get(1));

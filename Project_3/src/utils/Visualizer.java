@@ -3,6 +3,7 @@ package utils;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import javax.imageio.ImageIO;
 
@@ -13,13 +14,16 @@ public class Visualizer {
         colorWithBorders.show();
         Image blackWhiteWithBorders = visualizeSegmentsBlackWhite(solution);
         blackWhiteWithBorders.show();
-        saveImage(blackWhiteWithBorders, "test");
+        saveImage(blackWhiteWithBorders, "test_black_white");
+        saveImage(colorWithBorders, "test_color");
     }
 
     public static Image visualizeSegmentsColor(SolutionRepresentation solution) {
         ArrayList<Segment> segments = solution.getSegments();
+        HashSet<Segment> coloredSegments = new HashSet<>();
         for (Segment segment : segments) {
-            colorSegmentBorders(segment, solution, new RGBRepresentation(0, 255, 0));
+            colorSegmentBorders(segment, solution, new RGBRepresentation(0, 255, 0), coloredSegments);
+            coloredSegments.add(segment);
         }
         Image img = SoultionRepToImage(solution);
         return img;
@@ -31,27 +35,41 @@ public class Visualizer {
         }
 
         ArrayList<Segment> segments = solution.getSegments();
+        HashSet<Segment> coloredSegments = new HashSet<>();
         for (Segment segment : segments) {
-            colorSegmentBorders(segment, solution, new RGBRepresentation(0, 0, 0));
+            colorSegmentBorders(segment, solution, new RGBRepresentation(0, 0, 0), coloredSegments);
+            coloredSegments.add(segment);
         }
         Image img = SoultionRepToImage(solution);
         return img;
     }
 
-    public static void colorSegmentBorders(Segment segment, SolutionRepresentation solution, RGBRepresentation color) {
+    public static void colorSegmentBorders(Segment segment, SolutionRepresentation solution, RGBRepresentation color,
+            HashSet<Segment> coloredSegments) {
 
         for (Pixel pixel : segment.getSegment()) {
-            ArrayList<Integer> neighbourKeys = pixel.getNeighbors();
+            ArrayList<Integer> neighbourKeys = new ArrayList<>(pixel.getNeighbors().subList(0, 4));
             for (Integer key : neighbourKeys) {
                 if (key != null) {
                     Pixel neighbour = solution.getSolution().get(key);
-                    if (neighbour != null && !segment.contains(neighbour)) {
+                    if (neighbour != null && !segment.contains(neighbour)
+                            && !checkIfPixelIsInGivenSegments(neighbour, coloredSegments)) {
                         pixel.setColor(color);
+                        break;
                     }
                 }
             }
         }
 
+    }
+
+    private static boolean checkIfPixelIsInGivenSegments(Pixel pixel, HashSet<Segment> coloredSegments) {
+        for (Segment segment : coloredSegments) {
+            if (segment.contains(pixel)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static Image SoultionRepToImage(SolutionRepresentation solution) {
