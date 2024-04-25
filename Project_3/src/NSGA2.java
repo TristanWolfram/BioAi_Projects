@@ -106,7 +106,7 @@ public class NSGA2 {
 //                runGenerationTimed();
             }
         }
-        Visualizer.visualizeFrontier(this.population.subList(0, sizeOfBestFrontier));
+        Visualizer.visualizeFrontier(this.population.subList(0, sizeOfBestFrontier), this.useFrontier);
     }
 
     private void runGeneration() {
@@ -413,18 +413,12 @@ public class NSGA2 {
                     List<Pixel> partP1 = child1.getSolution().subList(prevPoint, point);
                     List<Pixel> partP2 = child2.getSolution().subList(prevPoint, point);
 
-                    //TODO change the connection instead of changin the pixels
                     for (int i = 0; i < partP1.size(); i++) {
                         PossibleConnections connectionP1 = partP1.get(i).connection;
                         PossibleConnections connectionP2 = partP2.get(i).connection;
                         partP1.get(i).setConnection(connectionP2);
                         partP2.get(i).setConnection(connectionP1);
                     }
-                    // child1.getSolution().removeAll(partP1);
-                    // child1.getSolution().addAll(prevPoint, partP2);
-
-                    // child2.getSolution().removeAll(partP2);
-                    // child2.getSolution().addAll(prevPoint, partP1);
 
                     prevPoint = point;
                 }

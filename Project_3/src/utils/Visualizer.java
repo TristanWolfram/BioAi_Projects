@@ -13,21 +13,30 @@ import javax.imageio.ImageIO;
 
 public class Visualizer {
 
-    public static void visualizeSolution(SolutionRepresentation solution, int i) {
+    public static void visualizeSolution(SolutionRepresentation solution, int i, boolean frontier) {
         Image colorWithBorders = visualizeSegmentsColor(solution);
         Image blackWhiteWithBorders = visualizeSegmentsBlackWhite(solution);
         String path = "Project_3/Project 3 evaluator/Project 3 evaluator/student_segments/results/";
-        saveImage(blackWhiteWithBorders, "test_black_white_" + i, path);
-        path = "Project_3/Project 3 evaluator/Project 3 evaluator/student_segments/coloredResults/";
-        saveImage(colorWithBorders, "test_color_" + i, path);
+        if(!frontier){
+            path = "Project_3/Project 3 evaluator/Project 3 evaluator/student_segments/other/";
+            saveImage(blackWhiteWithBorders, "black_white_GA", path);
+            path = "Project_3/Project 3 evaluator/Project 3 evaluator/student_segments/other/";
+            saveImage(colorWithBorders, "color_", path);
+        }
+        else {
+            saveImage(blackWhiteWithBorders, "black_white_" + i, path);
+            path = "Project_3/Project 3 evaluator/Project 3 evaluator/student_segments/coloredResults/";
+            saveImage(colorWithBorders, "color_" + i, path);
+        }
+        
     }
 
-    public static void visualizeFrontier(List<SolutionRepresentation> solutions) {
+    public static void visualizeFrontier(List<SolutionRepresentation> solutions, boolean frontier) {
         int i = 0;
         DeleteFiles("Project_3/Project 3 evaluator/Project 3 evaluator/student_segments/results/");
         DeleteFiles("Project_3/Project 3 evaluator/Project 3 evaluator/student_segments/coloredResults/");
         for (SolutionRepresentation solution : solutions) {
-            visualizeSolution(solution, i);
+            visualizeSolution(solution, i, frontier);
             i++;
         };
     }
